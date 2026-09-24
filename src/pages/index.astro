@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
 import Projects from '../components/Projects.astro';
+import About from '../components/About.astro';
 import { brands } from '../data/brands.js';
 
 const contactHref = 'https://wa.me/5511930591609';
@@ -16,5 +17,6 @@ const arrowIconSrc = '/icons/arrow-northeast.svg';
 	<main>
 		<Hero contactHref={contactHref} logoSrc={heroLogoSrc} arrowIconSrc={arrowIconSrc} brands={brands} />
 		<Projects />
+		<About />
 	</main>
 </Layout>

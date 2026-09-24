@@ -1,0 +1,179 @@
+---
+import { skills } from '../data/skills.js';
+---
+
+<section id="sobre" class="about page-gutters" aria-labelledby="about-title">
+	<div class="about__container container">
+		<figure class="about__portrait">
+			<div class="about__photo">
+				<img src="/images/giulia-about.png" alt="Retrato de Giulia, com cabelos escuros, óculos e blusa preta." width="768" height="1024" loading="lazy" decoding="async" />
+			</div>
+			<figcaption class="about__signature">
+				<span class="about__name">Giulia</span>
+				<span class="about__pointer" aria-hidden="true"><img src="/icons/about-pointer.svg" alt="" width="15.5117" height="15.1156" /></span>
+			</figcaption>
+		</figure>
+		<div class="about__content">
+			<p class="about__eyebrow">02 — SOBRE MIM</p>
+			<h2 id="about-title">Transformo repertório visual em interfaces mais claras e funcionais.</h2>
+			<p class="about__description">Sou designer com base em comunicação visual, web e experiência digital. Ao longo da minha trajetória, atuei com branding, social media, websites, landing pages e UX/UI, desenvolvendo soluções que equilibram estética, clareza e objetivos de negócio. Hoje, direciono meu trabalho para interfaces, sistemas e experiências digitais cada vez mais consistentes.</p>
+			<!-- Estado estático do Figma: track deslocado -90px; movimento pendente. -->
+			<div class="about__skills">
+				<ul class="about__skills-track" aria-label="Habilidades" role="list">
+					{skills.map((skill) => <li>{skill}</li>)}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.about {
+		padding-block: var(--section-padding-y);
+		border-block-start: var(--border-width-1) solid var(--color-border-subtle);
+		color: var(--color-text-primary);
+		letter-spacing: 0;
+		/* Recorte do fundo de Desktop.v4: y=2324, altura=644, referência 1440px. */
+		background: linear-gradient(256.65695624081104deg,
+			var(--color-dark) -26.405287284449276%, var(--color-wine) 102.68951846099077%);
+	}
+	.about__container {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--about-content-gap);
+	}
+	.about__portrait {
+		position: relative;
+		flex: none;
+		/* A assinatura avança 18px além da foto, como no Figma. */
+		inline-size: min(349px, calc(100% - 18px));
+		aspect-ratio: 349 / 451;
+		margin: 0;
+	}
+	.about__photo {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		border-radius: var(--radius-40);
+	}
+	.about__photo::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border: var(--border-width-1) solid color-mix(in srgb, var(--color-sand) 42%, transparent);
+		border-radius: inherit;
+		pointer-events: none;
+	}
+	.about__photo > img {
+		inline-size: 100%;
+		block-size: 100%;
+		/* O asset exportado já contém o enquadramento; mesma geometria do contexto. */
+		object-fit: fill;
+		object-position: bottom;
+	}
+	.about__signature {
+		position: absolute;
+		inset-inline-end: -18px;
+		inset-block-start: calc(100% * 349 / 451);
+	}
+	.about__name {
+		display: block;
+		padding: 5px 10px;
+		border-radius: var(--radius-full);
+		background: var(--color-sand-light);
+		color: var(--color-text-inverse);
+		font-size: var(--font-size-15);
+		font-weight: var(--font-weight-regular);
+		line-height: 19px;
+	}
+	.about__pointer {
+		position: absolute;
+		inset-inline-start: -7.6473388671875px;
+		inset-block-start: -10px;
+		inline-size: 21.957683563232422px;
+		block-size: 20.557741165161133px;
+		transform: rotate(18deg);
+		transform-origin: 0 0;
+	}
+	.about__pointer img {
+		position: absolute;
+		inset-block-start: 1.66%;
+		inset-inline-start: 5.49%;
+		max-inline-size: none;
+	}
+	.about__content {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-20);
+		inline-size: 100%;
+		max-inline-size: 780px;
+		min-inline-size: 0;
+	}
+	p, h2 { margin: 0; }
+	.about__eyebrow {
+		font-size: var(--font-size-14);
+		font-weight: var(--font-weight-bold);
+		line-height: var(--line-height-18);
+	}
+	h2 {
+		inline-size: 720px;
+		max-inline-size: 100%;
+		font-size: var(--font-size-heading-large);
+		font-weight: var(--font-weight-extra-bold);
+		line-height: var(--line-height-38);
+		overflow-wrap: break-word;
+	}
+	.about__description {
+		inline-size: 690px;
+		max-inline-size: 100%;
+		font-size: var(--font-size-16);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-25);
+	}
+	.about__skills {
+		inline-size: 100%;
+		block-size: 86px;
+		overflow: hidden;
+		/* SVG real de 263:826, usado como máscara dos textos HTML. */
+		mask-image: url('/images/about-skills-edge-fade.svg');
+		mask-mode: alpha;
+		mask-repeat: no-repeat;
+		mask-size: 111.5384615385% 88px;
+		mask-position: 1px -2px;
+	}
+	.about__skills-track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-28);
+		inline-size: max-content;
+		block-size: 86px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		transform: translateX(-90px);
+		font-size: var(--font-size-30);
+		font-weight: var(--font-weight-light);
+		line-height: var(--line-height-38);
+	}
+	.about__skills-track li { display: flex; align-items: center; gap: var(--space-28); white-space: nowrap; }
+	.about__skills-track li::after {
+		content: '';
+		flex: none;
+		inline-size: var(--space-8);
+		block-size: var(--space-8);
+		border: 1.5px solid var(--color-sand-80);
+		border-radius: 50%;
+	}
+	/* Adaptações provisórias: limites já adotados em global.css. */
+	@media (min-width: 768px) {
+		.about__container { flex-direction: row; }
+		.about__portrait { inline-size: min(349px, 32%); }
+		.about__content { flex: 1; }
+	}
+	@media (min-width: 1280px) {
+		.about__portrait { inline-size: 349px; }
+		h2 { line-height: var(--line-height-54); }
+	}
+</style>

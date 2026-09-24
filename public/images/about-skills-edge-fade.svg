@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="870" height="88" viewBox="0 0 870 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Skills Marquee / Edge fade" d="M0 0H870V88H0V0Z" fill="url(#paint0_linear_0_27)"/>
+<defs>
+<linearGradient id="paint0_linear_0_27" x1="870" y1="44" x2="7.27481e-07" y2="44" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.25" stop-color="white"/>
+<stop offset="0.524038" stop-color="white"/>
+<stop offset="0.75" stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+</defs>
+</svg>
