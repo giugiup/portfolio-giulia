@@ -1,0 +1,417 @@
+/*
+ * Design system do portfólio — valores fornecidos no handoff do Figma.
+ * Primitivos preservam as escalas; tokens semânticos expressam seus usos.
+ * PENDENTE FIGMA indica informação não fornecida: não substituir por estimativas.
+ * Nos tokens pendentes, initial permite usar um fallback em var(--token, fallback).
+ */
+
+/* Fonte local: Google Fonts / ofl/sora. Licença em public/fonts/sora-OFL.txt. */
+@font-face {
+	font-family: 'Sora';
+	src: url('/fonts/sora-variable.ttf') format('truetype');
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: swap;
+}
+
+/* Colors / primitives */
+:root {
+	--color-dark: #0D0305;
+	--color-deep-wine: #260606;
+	--color-wine: #400B0B;
+	--color-accent: #731D1D;
+	--color-sand: #D9B9A7;
+	--color-sand-light: #F2E4DC;
+	--color-white: #FFFFFF;
+	--color-status-available: #B4DD32;
+	/* Stop intermediário exato do fundo radial do Figma, node 331:1299. */
+	--color-hero-gradient-mid: #270708;
+
+	/* Apenas opacidades com uso explicitamente informado no handoff. */
+	--color-dark-20: color-mix(in srgb, var(--color-dark) 20%, transparent);
+	--color-dark-40: color-mix(in srgb, var(--color-dark) 40%, transparent);
+	--color-wine-80: color-mix(in srgb, var(--color-wine) 80%, transparent);
+	--color-sand-20: color-mix(in srgb, var(--color-sand) 20%, transparent);
+	--color-sand-40: color-mix(in srgb, var(--color-sand) 40%, transparent);
+	--color-sand-60: color-mix(in srgb, var(--color-sand) 60%, transparent);
+	--color-sand-80: color-mix(in srgb, var(--color-sand) 80%, transparent);
+	/* PENDENTE FIGMA: percentuais adicionais de Dark, Deep Wine, Wine, Accent e Sand. */
+}
+
+/* Colors / semantic — Dark inicial, independente da preferência do sistema. */
+:root,
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--color-bg-page: var(--color-dark);
+	--color-bg-section: var(--color-deep-wine);
+	--color-surface: var(--color-wine);
+	--color-surface-raised: var(--color-wine-80);
+	--color-bg-accent: var(--color-accent);
+	--color-bg-light: var(--color-sand);
+	--color-text-primary: var(--color-sand-light);
+	--color-text-secondary: var(--color-sand-80);
+	--color-text-muted: var(--color-sand-60);
+	--color-text-inverse: var(--color-dark);
+	--color-border-subtle: var(--color-sand-20);
+	--color-border-strong: var(--color-sand-40);
+	--color-icon-primary: var(--color-sand-light);
+	--color-icon-inverse: var(--color-dark);
+	--color-action-primary-bg: var(--color-sand);
+	--color-action-primary-text: var(--color-dark);
+	--color-action-secondary-bg: var(--color-accent);
+	--color-action-secondary-text: var(--color-sand-light);
+	--color-tag-bg: var(--color-sand-20);
+	--color-tag-text: var(--color-sand);
+	--color-overlay-default: var(--color-dark-20);
+	--color-overlay-hover: var(--color-dark-40);
+	--color-button-light-bg: var(--color-sand);
+	--color-button-light-bg-hover: var(--color-sand-light);
+	--color-button-light-text: var(--color-dark);
+	--color-button-light-icon: var(--color-dark);
+	--color-button-dark-bg: var(--color-wine);
+	--color-button-dark-bg-hover: var(--color-accent);
+	--color-button-dark-text: var(--color-sand-light);
+	--color-button-dark-icon: var(--color-sand-light);
+
+	/* PENDENTE FIGMA: cores específicas para links, visitados e seleção.
+	 * Fallbacks técnicos: links herdam texto; seleção usa cores do sistema. */
+	--color-link: initial;
+	--color-link-visited: initial;
+	--color-selection-background: initial;
+	--color-selection-text: initial;
+}
+
+/*
+ * PENDENTE FIGMA: mapeamento semântico Light.
+ * Quando fornecido, adicionar :root[data-theme='light'] com os mesmos nomes
+ * semânticos e color-scheme: light. Não inverter cores ou criar paleta estimada.
+ */
+
+:root {
+	/* Typography — Sora é a fonte principal em todos os papéis.
+	 * system-ui e sans-serif são fallbacks técnicos, não fontes do Figma. */
+	--font-family-base: 'Sora', system-ui, sans-serif;
+	--font-family-body: var(--font-family-base);
+	--font-family-heading: var(--font-family-base);
+	--font-weight-light: 300;
+	--font-weight-regular: 400;
+	--font-weight-bold: 700;
+	--font-weight-extra-bold: 800;
+
+	/* Escalas literais em px, sem interpolação ou pareamentos presumidos. */
+	--font-size-10: 10px;
+	--font-size-11: 11px;
+	--font-size-12: 12px;
+	--font-size-13: 13px;
+	--font-size-14: 14px;
+	--font-size-15: 15px;
+	--font-size-16: 16px;
+	--font-size-17: 17px;
+	--font-size-18: 18px;
+	--font-size-20: 20px;
+	--font-size-22: 22px;
+	--font-size-30: 30px;
+	--font-size-40: 40px;
+	--font-size-48: 48px;
+	--font-size-54: 54px;
+	--font-size-58: 58px;
+	--font-size-78: 78px;
+
+	--line-height-14: 14px;
+	--line-height-16: 16px;
+	--line-height-18: 18px;
+	--line-height-20: 20px;
+	--line-height-22: 22px;
+	--line-height-24: 24px;
+	--line-height-25: 25px;
+	--line-height-28: 28px;
+	--line-height-38: 38px;
+	--line-height-54: 54px;
+	--line-height-60: 60px;
+	--line-height-64: 64px;
+	--line-height-84: 84px;
+
+	/* PENDENTE FIGMA: tamanho/peso do corpo e pareamentos de line-height. */
+	--font-size-body: initial;
+	--font-weight-body: initial;
+	--line-height-body: initial;
+	--line-height-heading: initial;
+	--line-height-label: initial;
+	/* PENDENTE FIGMA: letter-spacing por estilo de texto. */
+	--letter-spacing-body: initial;
+	--letter-spacing-heading: initial;
+	--letter-spacing-label: initial;
+
+	/* Spacing */
+	--space-0: 0px;
+	--space-4: 4px;
+	--space-8: 8px;
+	--space-12: 12px;
+	--space-16: 16px;
+	--space-20: 20px;
+	--space-24: 24px;
+	--space-28: 28px;
+	--space-32: 32px;
+	--space-40: 40px;
+	--space-48: 48px;
+	--space-56: 56px;
+	--space-60: 60px;
+	--space-64: 64px;
+	--space-80: 80px;
+	--space-96: 96px;
+	--space-128: 128px;
+	--space-160: 160px;
+
+	/* Radius */
+	--radius-0: 0px;
+	--radius-8: 8px;
+	--radius-10: 10px;
+	--radius-14: 14px;
+	--radius-28: 28px;
+	--radius-32: 32px;
+	--radius-40: 40px;
+	--radius-48: 48px;
+	--radius-full: 999px;
+
+	/* Borders */
+	--border-width-1: 1px;
+	--border-width-1-25: 1.25px;
+	--border-width-2: 2px;
+
+	/* Layout — reference é documentação, nunca uma largura fixa da página. */
+	--layout-reference-width: 1440px;
+	--layout-content-max: 1280px;
+	/* PENDENTE FIGMA: limites específicos para texto e conteúdo amplo. */
+	--layout-content-max-text: initial;
+	--layout-content-max-wide: initial;
+	/* PENDENTE FIGMA: ordem das camadas conforme os componentes. */
+	--z-base: initial;
+	--z-header: initial;
+	--z-overlay: initial;
+	--z-dialog: initial;
+
+	/* Components */
+	--tag-padding-x: 11px;
+	--tag-padding-y: 7px;
+	--tag-radius: var(--radius-10);
+	--cta-padding-x: var(--space-24);
+	--cta-padding-y: 14px;
+	--cta-gap: 10px;
+	--nav-cta-padding-x: var(--space-16);
+	--nav-cta-padding-y: 9px;
+	--card-radius: var(--radius-28);
+
+	/* Motion */
+	--motion-duration-instant: 10ms;
+	--motion-duration-micro: 220ms;
+	--motion-duration-base: 300ms;
+	--motion-duration-bouncy: 491ms;
+	--motion-duration-experience: 580ms;
+	--motion-duration-slow: 700ms;
+	--motion-duration-marquee: 28000ms;
+	--motion-duration-reduced: 0ms;
+	--motion-ease-linear: linear;
+	--motion-ease-out: ease-out;
+	--motion-ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+	--motion-ease-bouncy: var(--motion-ease-out-back);
+	--motion-ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+
+	/* Responsive values / mobile */
+	--layout-gutter-mobile: 24px;
+	--section-padding-y-mobile: 64px;
+	--section-padding-y-large-mobile: 80px;
+	--layout-grid-gap-mobile: 16px;
+	--about-content-gap-mobile: 32px;
+	--formation-gap-mobile: 32px;
+	--hero-padding-top-mobile: 80px;
+	--hero-padding-bottom-mobile: 80px;
+	--nav-height-mobile: 80px;
+	--font-size-hero-display-mobile: 40px;
+	--font-size-section-display-mobile: 30px;
+	--font-size-heading-large-mobile: 30px;
+	--font-size-heading-item-mobile: 22px;
+
+	/* Responsive values / tablet */
+	--layout-gutter-tablet: 40px;
+	--section-padding-y-tablet: 80px;
+	--section-padding-y-large-tablet: 96px;
+	--layout-grid-gap-tablet: 24px;
+	--about-content-gap-tablet: 40px;
+	--formation-gap-tablet: 40px;
+	--hero-padding-top-tablet: 96px;
+	--hero-padding-bottom-tablet: 96px;
+	--nav-height-tablet: 80px;
+	--font-size-hero-display-tablet: 48px;
+	--font-size-section-display-tablet: 48px;
+	--font-size-heading-large-tablet: 30px;
+	--font-size-heading-item-tablet: 22px;
+
+	/* Responsive values / desktop */
+	--layout-gutter-desktop: 80px;
+	--section-padding-y-desktop: 96px;
+	--section-padding-y-large-desktop: 128px;
+	--layout-grid-gap-desktop: 24px;
+	--about-content-gap-desktop: 56px;
+	--formation-gap-desktop: 60px;
+	--hero-padding-top-desktop: 138px;
+	--hero-padding-bottom-desktop: 120px;
+	--nav-height-desktop: 96px;
+	--font-size-hero-display-desktop: 58px;
+	--font-size-section-display-desktop: 54px;
+	--font-size-heading-large-desktop: 48px;
+	--font-size-heading-item-desktop: 30px;
+
+	/* Base mobile; breakpoints provisórios documentados abaixo. */
+	--layout-gutter: var(--layout-gutter-mobile);
+	--section-padding-y: var(--section-padding-y-mobile);
+	--section-padding-y-large: var(--section-padding-y-large-mobile);
+	--layout-grid-gap: var(--layout-grid-gap-mobile);
+	--about-content-gap: var(--about-content-gap-mobile);
+	--formation-gap: var(--formation-gap-mobile);
+	--hero-padding-top: var(--hero-padding-top-mobile);
+	--hero-padding-bottom: var(--hero-padding-bottom-mobile);
+	/* Aliases com os nomes usados no handoff de implementação do Hero. */
+	--layout-hero-padding-top: var(--hero-padding-top);
+	--layout-hero-padding-bottom: var(--hero-padding-bottom);
+	--nav-height: var(--nav-height-mobile);
+	--font-size-hero-display: var(--font-size-hero-display-mobile);
+	--font-size-section-display: var(--font-size-section-display-mobile);
+	--font-size-heading-large: var(--font-size-heading-large-mobile);
+	--font-size-heading-item: var(--font-size-heading-item-mobile);
+
+	/* Comportamento técnico preservado, sem animação de scroll.
+	 * PENDENTE FIGMA: compensação de âncoras se houver navegação fixa. */
+	--scroll-behavior: auto;
+	--scroll-offset: 0px;
+}
+
+/*
+ * PROVISÓRIO — validar os limites no Figma:
+ * mobile < 768px; tablet >= 768px; desktop >= 1280px.
+ * Desktop começa em 1280px para acomodar a navegação sem compressão.
+ * Custom properties não podem ser usadas nas condições de @media.
+ * Repetir os mesmos limites nos estilos scoped; não interpolar os tokens.
+ */
+
+@media (min-width: 768px) {
+	:root {
+		--layout-gutter: var(--layout-gutter-tablet);
+		--section-padding-y: var(--section-padding-y-tablet);
+		--section-padding-y-large: var(--section-padding-y-large-tablet);
+		--layout-grid-gap: var(--layout-grid-gap-tablet);
+		--about-content-gap: var(--about-content-gap-tablet);
+		--formation-gap: var(--formation-gap-tablet);
+		--hero-padding-top: var(--hero-padding-top-tablet);
+		--hero-padding-bottom: var(--hero-padding-bottom-tablet);
+		--nav-height: var(--nav-height-tablet);
+		--font-size-hero-display: var(--font-size-hero-display-tablet);
+		--font-size-section-display: var(--font-size-section-display-tablet);
+		--font-size-heading-large: var(--font-size-heading-large-tablet);
+		--font-size-heading-item: var(--font-size-heading-item-tablet);
+	}
+}
+
+@media (min-width: 1280px) {
+	:root {
+		--layout-gutter: var(--layout-gutter-desktop);
+		--section-padding-y: var(--section-padding-y-desktop);
+		--section-padding-y-large: var(--section-padding-y-large-desktop);
+		--layout-grid-gap: var(--layout-grid-gap-desktop);
+		--about-content-gap: var(--about-content-gap-desktop);
+		--formation-gap: var(--formation-gap-desktop);
+		--hero-padding-top: var(--hero-padding-top-desktop);
+		--hero-padding-bottom: var(--hero-padding-bottom-desktop);
+		--nav-height: var(--nav-height-desktop);
+		--font-size-hero-display: var(--font-size-hero-display-desktop);
+		--font-size-section-display: var(--font-size-section-display-desktop);
+		--font-size-heading-large: var(--font-size-heading-large-desktop);
+		--font-size-heading-item: var(--font-size-heading-item-desktop);
+	}
+}
+
+/* Global / base */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 100%;
+	scroll-behavior: var(--scroll-behavior);
+	scroll-padding-block-start: var(--scroll-offset);
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-family-body);
+	/* Fallbacks do navegador até confirmar os estilos de corpo. */
+	font-size: var(--font-size-body, 1rem);
+	font-weight: var(--font-weight-body, normal);
+	line-height: var(--line-height-body, normal);
+	letter-spacing: var(--letter-spacing-body, normal);
+	color: var(--color-text-primary);
+	background-color: var(--color-bg-page);
+}
+
+/*
+ * Layout utilities — usar .page-gutters como wrapper de .container.
+ * Separar gutters mantém os 1280px de conteúdo útil: 1440 - (2 × 80).
+ */
+.page-gutters {
+	padding-inline: var(--layout-gutter);
+}
+
+.container {
+	width: 100%;
+	max-width: var(--layout-content-max);
+	margin-inline: auto;
+}
+
+img {
+	display: block;
+	max-inline-size: 100%;
+	block-size: auto;
+}
+
+/* Links identificáveis; foco, aparência e estados dos controles preservados. */
+a:any-link {
+	color: var(--color-link, inherit);
+	text-decoration-line: underline;
+	text-underline-offset: auto;
+}
+
+a:visited {
+	color: var(--color-link-visited, inherit);
+}
+
+button,
+input[type='button'],
+input[type='submit'],
+input[type='reset'] {
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+::selection {
+	color: var(--color-selection-text, HighlightText);
+	background-color: var(--color-selection-background, Highlight);
+}
+
+/*
+ * Motion / accessibility — componentes devem consumir estes tokens.
+ * JavaScript deve consultar matchMedia('(prefers-reduced-motion: reduce)')
+ * e não depender de animationend/transitionend para funções essenciais.
+ */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--scroll-behavior: auto;
+		--motion-duration-instant: var(--motion-duration-reduced);
+		--motion-duration-micro: var(--motion-duration-reduced);
+		--motion-duration-base: var(--motion-duration-reduced);
+		--motion-duration-bouncy: var(--motion-duration-reduced);
+		--motion-duration-experience: var(--motion-duration-reduced);
+		--motion-duration-slow: var(--motion-duration-reduced);
+		--motion-duration-marquee: var(--motion-duration-reduced);
+	}
+}

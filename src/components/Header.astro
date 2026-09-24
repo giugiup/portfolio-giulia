@@ -1,0 +1,107 @@
+---
+import Button from './Button.astro';
+
+const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
+const navigation = [
+	{ text: 'Projetos', href: '#projetos' },
+	{ text: 'Sobre mim', href: '#sobre' },
+	{ text: 'Experiência', href: '#experiencia' },
+	{ text: 'Formação', href: '#formacao' },
+];
+---
+
+<header class="site-header">
+	<div class="site-header__inner">
+		{logoSrc ? (
+			<a class="site-header__logo" href="/" aria-label="Página inicial">
+				<img src={logoSrc} alt="Giulia" width="78.4651" height="59" />
+			</a>
+		) : <div class="site-header__logo" aria-hidden="true"></div>}
+		<nav class="site-header__nav" aria-label="Navegação principal">
+			<ul>
+				{navigation.map(({ text, href }) => <li><a href={href}>{text}</a></li>)}
+			</ul>
+		</nav>
+		<div class="site-header__actions">
+			<span class="availability">
+				<span class="availability__dot" aria-hidden="true"></span>
+				Disponível para novos projetos
+			</span>
+			<Button text="Contato" href={contactHref} variant="header" iconSrc={arrowIconSrc} disabled={!contactHref} />
+		</div>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		background-color: var(--color-bg-page);
+		border-block-end: var(--border-width-1) solid var(--color-border-subtle);
+	}
+	.site-header__inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-24);
+		min-block-size: calc(var(--nav-height) - var(--border-width-1));
+		padding-inline: var(--layout-gutter);
+	}
+	.site-header__logo {
+		position: relative;
+		display: block;
+		flex: 0 0 91px;
+		inline-size: 91px;
+		block-size: 59px;
+	}
+	.site-header__logo img { position: absolute; inset-block-start: 0; inset-inline-start: 6.98%; }
+	/* PROVISÓRIO: navegação completa somente a partir de 1280px. */
+	.site-header__nav { display: none; }
+	.site-header__nav ul {
+		display: flex;
+		align-items: center;
+		gap: var(--space-32);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.site-header__nav a {
+		color: var(--color-text-primary);
+		font-size: var(--font-size-16);
+		font-weight: var(--font-weight-regular);
+		line-height: normal;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.site-header__nav a:hover { text-decoration: underline; }
+	.site-header a:focus-visible {
+		outline: var(--border-width-2) solid var(--color-text-primary);
+		outline-offset: var(--space-4);
+	}
+	.site-header__actions { display: flex; align-items: center; gap: var(--space-12); }
+	.availability {
+		display: none;
+		align-items: center;
+		gap: var(--space-8);
+		min-block-size: 26px;
+		padding-inline: var(--space-12);
+		border: var(--border-width-1) solid var(--color-border-subtle);
+		border-radius: var(--radius-full);
+		background-color: var(--color-bg-page);
+		color: var(--color-text-primary);
+		font-size: var(--font-size-11);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-16);
+		white-space: nowrap;
+	}
+	.availability__dot {
+		inline-size: 5px;
+		block-size: 5px;
+		border-radius: var(--radius-full);
+		background-color: var(--color-status-available);
+	}
+	/* PROVISÓRIO: badge oculto no mobile para preservar logo e CTA. */
+	@media (min-width: 768px) { .availability { display: inline-flex; } }
+	@media (min-width: 1280px) {
+		.site-header__inner { padding-inline: var(--space-40); }
+		.site-header__nav { display: block; }
+	}
+</style>

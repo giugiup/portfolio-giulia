@@ -1,0 +1,66 @@
+---
+import ProjectCard from './ProjectCard.astro';
+import { projects } from '../data/projects.js';
+---
+
+<section id="projetos" class="projects page-gutters" aria-labelledby="projects-title">
+	<h2 id="projects-title" class="projects__title">01 — Projetos</h2>
+	<div class="container">
+		<ol class="projects__grid" role="list">
+			{projects.map(({ column, offset, figmaNode, ...project }) => (
+				<li style={`--project-column: ${column}; --project-offset: ${offset}px`}>
+					<ProjectCard {...project} />
+				</li>
+			))}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.projects {
+		padding-block: var(--section-padding-y);
+		border-block-start: var(--border-width-1) solid var(--color-border-subtle);
+		/* Recorte do gradiente do Desktop.v4 (1440 × 5145), y=960, h=1364.
+		 * Conversão da matriz gradientTransform; mantém o fundo local à seção. */
+		background: linear-gradient(256.65695624081104deg,
+			var(--color-dark) -5.5032651126677745%, var(--color-wine) 111.09051748884676%);
+	}
+	/* O frame não tem título visível; este nomeia a seção para leitores de tela. */
+	.projects__title {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+	.projects__grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: start;
+		gap: var(--layout-grid-gap);
+		max-inline-size: 400px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.projects__grid > li { min-inline-size: 0; }
+	/* Adaptação provisória, usando os breakpoints existentes do projeto. */
+	@media (min-width: 768px) {
+		.projects__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-inline-size: 824px; }
+	}
+	@media (min-width: 1280px) {
+		.projects { padding-block: var(--space-80) var(--space-96); }
+		.projects__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-inline-size: 1248px; }
+		/* Uma linha compartilhada permite offsets exatos sem reordenar o DOM.
+		 * Sua altura é determinada pelo card que termina mais abaixo (1187px). */
+		.projects__grid > li {
+			grid-column: var(--project-column);
+			grid-row: 1;
+			margin-block-start: var(--project-offset);
+		}
+	}
+</style>

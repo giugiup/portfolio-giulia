@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Projects from '../components/Projects.astro';
+import { brands } from '../data/brands.js';
+
+const contactHref = 'https://wa.me/5511930591609';
+const headerLogoSrc = '/images/giulia-logo-header.svg';
+const heroLogoSrc = '/images/giulia-logo-hero.svg';
+const arrowIconSrc = '/icons/arrow-northeast.svg';
+---
+
+<Layout>
+	<Header contactHref={contactHref} logoSrc={headerLogoSrc} arrowIconSrc={arrowIconSrc} />
+	<main>
+		<Hero contactHref={contactHref} logoSrc={heroLogoSrc} arrowIconSrc={arrowIconSrc} brands={brands} />
+		<Projects />
+	</main>
+</Layout>

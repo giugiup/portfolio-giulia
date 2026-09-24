@@ -1,0 +1,116 @@
+---
+import Button from './Button.astro';
+
+const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+	<div class="hero__content">
+		<div class="hero__logo" aria-hidden={!logoSrc ? 'true' : undefined}>
+			{logoSrc && <img src={logoSrc} alt="Giulia" width="121.578" height="92" />}
+		</div>
+		<h1 id="hero-title">
+			<span>Projetos que conectam</span>
+			<span>visual, interface e experiência.</span>
+		</h1>
+		<p class="hero__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet dui nec odio tempor tempor ut sed purus. Morbi tempus justo eu bibendum convallis.</p>
+		<Button text="Entre em contato" href={contactHref} variant="hero" iconSrc={arrowIconSrc} disabled={!contactHref} />
+	</div>
+	<!-- Estado Start do carrossel do Figma, estático nesta etapa. -->
+	<div class="hero__brands" aria-hidden={brands.length === 0 ? 'true' : undefined}>
+		<div class="hero__brands-viewport">
+			{brands.length > 0 && (
+				<ul class="hero__brands-list" aria-label="Marcas">
+					{brands.map(({ src, alt, width, height, cropped }) => (
+						<li class:list={{ 'hero__brand-crop': cropped }}><img src={src} alt={alt} width={width} height={height} loading="lazy" /></li>
+					))}
+				</ul>
+			)}
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		background-color: var(--color-bg-page);
+		/* Transformação radial do node 331:1299: raios 844.17 × 506.5;
+		 * centro 720,357.5 no frame 1440 × 864, preservados proporcionalmente. */
+		background-image: radial-gradient(ellipse 58.6229167% 58.6226852% at 50% 41.3773148%, var(--color-wine) 0%, var(--color-hero-gradient-mid) 50%, var(--color-dark) 100%);
+		color: var(--color-text-primary);
+	}
+	.hero__content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-28);
+		padding: var(--layout-hero-padding-top) var(--layout-gutter) var(--layout-hero-padding-bottom);
+		text-align: center;
+	}
+	.hero__logo { position: relative; inline-size: 141px; block-size: 92px; flex: none; }
+	.hero__logo img { position: absolute; inset-block-start: 0; inset-inline-start: 6.98%; }
+	.hero h1 {
+		max-inline-size: 980px;
+		margin: 0;
+		font-family: var(--font-family-heading);
+		font-size: var(--font-size-hero-display);
+		font-weight: var(--font-weight-extra-bold);
+		/* PROVISÓRIO mobile/tablet: proporção do line-height desktop 64/58. */
+		line-height: calc(64 / 58);
+		overflow-wrap: anywhere;
+	}
+	.hero h1 span { display: block; }
+	.hero__description {
+		max-inline-size: 820px;
+		margin: 0;
+		font-size: var(--font-size-18);
+		font-weight: var(--font-weight-regular);
+		/* Figma 263:792: line-height AUTO, duas linhas/46px no desktop. */
+		line-height: normal;
+		overflow-wrap: anywhere;
+	}
+	.hero__brands {
+		display: flex;
+		align-items: flex-start;
+		min-block-size: 200px;
+		padding-block-end: var(--space-40);
+		padding-inline: var(--layout-gutter);
+	}
+	.hero__brands-viewport {
+		position: relative;
+		overflow: clip;
+		inline-size: 100%;
+		max-inline-size: var(--layout-content-max);
+		min-block-size: 160px;
+		margin-inline: auto;
+		mask-image: url('/images/brands-edge-mask.svg');
+		mask-size: 100% 160px;
+		mask-repeat: no-repeat;
+	}
+	.hero__brands-list {
+		position: absolute;
+		inset-block-start: 50px;
+		inset-inline-start: -112px;
+		display: flex;
+		align-items: center;
+		gap: var(--space-80);
+		block-size: 59px;
+		inline-size: 2235px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.hero__brands-list li { flex: none; }
+	.hero__brands-list img { max-inline-size: none; }
+	/* Transformação de image fill do node 324:220, preservando a fonte original. */
+	.hero__brand-crop { position: relative; overflow: hidden; inline-size: 206px; block-size: 53px; }
+	.hero__brand-crop img {
+		position: absolute;
+		inline-size: 108.47%;
+		block-size: 215.42%;
+		inset-inline-start: -4.24%;
+		inset-block-start: -53.11%;
+	}
+	@media (min-width: 1280px) {
+		.hero h1 { line-height: var(--line-height-64); }
+	}
+</style>
