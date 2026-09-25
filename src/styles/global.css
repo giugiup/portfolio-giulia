@@ -351,7 +351,11 @@ body {
 	line-height: var(--line-height-body, normal);
 	letter-spacing: var(--letter-spacing-body, normal);
 	color: var(--color-text-primary);
-	background-color: var(--color-bg-page);
+	background: linear-gradient(180deg, var(--color-dark) 0%, var(--color-wine) 100%);
+}
+
+main {
+	background: transparent;
 }
 
 /*

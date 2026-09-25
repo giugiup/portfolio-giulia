@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
 import Projects from '../components/Projects.astro';
 import About from '../components/About.astro';
+import Experience from '../components/Experience.astro';
 import { brands } from '../data/brands.js';
 
 const contactHref = 'https://wa.me/5511930591609';
@@ -18,5 +19,6 @@ const arrowIconSrc = '/icons/arrow-northeast.svg';
 		<Hero contactHref={contactHref} logoSrc={heroLogoSrc} arrowIconSrc={arrowIconSrc} brands={brands} />
 		<Projects />
 		<About />
+		<Experience />
 	</main>
 </Layout>

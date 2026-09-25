@@ -1,0 +1,506 @@
+---
+import { experiences } from '../data/experience.js';
+
+const activeExperience = experiences[0];
+---
+
+<section id="experiencia" class="experience" aria-labelledby="experience-title">
+	<div class="experience__surface">
+		<header class="experience__header">
+			<p class="experience__eyebrow">03 — EXPERIÊNCIA PROFISSIONAL</p>
+			<h2 id="experience-title">Minha trajetória conecta<br />comunicação visual, web e UX/UI</h2>
+			<p class="experience__description">evoluindo para interfaces, sistemas e experiências digitais.</p>
+		</header>
+
+		<div class="experience__content">
+			<div class="experience__panels" aria-live="polite">
+				{experiences.map((experience, index) => (
+					<article
+						class:list={['experience__panel', { 'is-active': index === 0 }]}
+						data-experience-panel={experience.id}
+						id={`experience-panel-${experience.id}`}
+						aria-hidden={index === 0 ? 'false' : 'true'}
+						tabindex={index === 0 ? 0 : -1}
+					>
+						<div class="experience__panel-heading">
+							<p class="experience__panel-number">{experience.number}</p>
+							<div class="experience__panel-meta">
+								<p class="experience__panel-company">{experience.company}</p>
+								<p class="experience__panel-role">{experience.role}</p>
+							</div>
+						</div>
+						<div class="experience__panel-description">
+							<p>{experience.description}</p>
+						</div>
+						<ul class="experience__panel-skills" aria-label={`${experience.company} habilidades`}>
+							{experience.skills.map((skill) => <li>{skill}</li>)}
+						</ul>
+					</article>
+				))}
+			</div>
+
+			<div class="experience__selector" aria-label="Lista de experiências">
+				<div class="experience__selector-viewport">
+					<div class="experience__selector-content">
+						{experiences.map((experience, index) => (
+							<button
+								type="button"
+								class:list={['experience__item', { 'is-active': index === 0 }]}
+								data-experience-button={experience.id}
+								aria-selected={index === 0 ? 'true' : 'false'}
+								aria-pressed={index === 0 ? 'true' : 'false'}
+								aria-controls={`experience-panel-${experience.id}`}
+								tabindex={index === 0 ? 0 : -1}
+							>
+								<span class="experience__item-indicator" aria-hidden="true"></span>
+								<span class="experience__item-copy">
+									<span class="experience__item-company">{experience.company}</span>
+									<span class="experience__item-role">{experience.role}</span>
+								</span>
+								<span class="experience__item-period">{experience.period}</span>
+							</button>
+						))}
+					</div>
+				</div>
+				<div class="experience__scrollbar" aria-hidden="true">
+					<span class="experience__scrollbar-track"></span>
+					<span class="experience__scrollbar-thumb"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	const buttons = [...document.querySelectorAll('[data-experience-button]')];
+	const panels = [...document.querySelectorAll('[data-experience-panel]')];
+	const viewport = document.querySelector('.experience__selector-viewport');
+	const selectorContent = document.querySelector('.experience__selector-content');
+	const thumb = document.querySelector('.experience__scrollbar-thumb');
+
+	function updateThumbPosition() {
+		if (!viewport || !selectorContent || !thumb) return;
+		const maxScroll = selectorContent.scrollHeight - viewport.clientHeight;
+		if (maxScroll <= 0) {
+			thumb.style.top = '18px';
+			return;
+		}
+		const ratio = viewport.scrollTop / maxScroll;
+		const trackHeight = 390;
+		const thumbHeight = 78;
+		const offset = 18 + ratio * Math.max(0, trackHeight - thumbHeight);
+		thumb.style.top = `${offset}px`;
+	}
+
+	function setActiveExperience(button) {
+		const targetId = button.dataset.experienceButton;
+
+		buttons.forEach((item) => {
+			const active = item === button;
+			item.classList.toggle('is-active', active);
+			item.setAttribute('aria-selected', active ? 'true' : 'false');
+			item.setAttribute('aria-pressed', active ? 'true' : 'false');
+			item.tabIndex = active ? 0 : -1;
+		});
+
+		panels.forEach((panel) => {
+			const active = panel.dataset.experiencePanel === targetId;
+			panel.classList.toggle('is-active', active);
+			panel.setAttribute('aria-hidden', active ? 'false' : 'true');
+			panel.tabIndex = active ? 0 : -1;
+		});
+
+		if (viewport) {
+			const targetScrollTop = Math.max(0, button.offsetTop - 20);
+			viewport.scrollTop = targetScrollTop;
+			updateThumbPosition();
+		}
+	}
+
+	buttons.forEach((button) => {
+		button.addEventListener('click', () => setActiveExperience(button));
+	});
+
+	if (viewport) {
+		viewport.addEventListener('scroll', updateThumbPosition);
+		updateThumbPosition();
+	}
+</script>
+
+<style>
+	.experience {
+		padding-block: var(--section-padding-y);
+		padding-inline: 40px;
+		background: transparent;
+		color: var(--color-text-primary);
+		box-sizing: border-box;
+	}
+
+	.experience__surface {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-32);
+		border-radius: var(--radius-32);
+		overflow: hidden;
+		padding: var(--space-80);
+		background: #0D0305;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: 1360px;
+		margin-inline: auto;
+	}
+
+	.experience__header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-20);
+		width: 100%;
+	}
+
+	.experience__eyebrow {
+		margin: 0;
+		font-size: var(--font-size-14);
+		font-weight: var(--font-weight-bold);
+		line-height: var(--line-height-18);
+		color: var(--color-text-primary);
+	}
+
+	.experience__header h2 {
+		margin: 0;
+		max-width: 980px;
+		font-size: var(--font-size-section-display);
+		line-height: 0.96;
+		font-weight: var(--font-weight-extra-bold);
+		color: var(--color-text-primary);
+	}
+
+	.experience__description {
+		margin: 0;
+		max-width: 620px;
+		font-size: var(--font-size-17);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-20);
+		color: var(--color-text-primary);
+	}
+
+	.experience__content {
+		display: flex;
+		align-items: flex-start;
+		gap: 56px;
+		width: 100%;
+	}
+
+	.experience__panels {
+		position: relative;
+		inline-size: 500px;
+		height: 520px;
+		flex: none;
+		background: var(--color-bg-section);
+		border-radius: var(--radius-32);
+		overflow: hidden;
+	}
+
+	.experience__panel {
+		position: absolute;
+		inset: 0;
+		padding: 42px 40px 57px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(8px);
+		transition: opacity var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
+	}
+
+	.experience__panel.is-active {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(0);
+	}
+
+	.experience__panel-heading {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		width: 420px;
+		color: var(--color-text-primary);
+	}
+
+	.experience__panel-number {
+		margin: 0;
+		font-size: 78px;
+		font-weight: var(--font-weight-extra-bold);
+		line-height: 1;
+		color: var(--color-text-primary);
+	}
+
+	.experience__panel-meta {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		width: 420px;
+	}
+
+	.experience__panel-company {
+		margin: 0;
+		font-size: var(--font-size-22);
+		font-weight: var(--font-weight-bold);
+		line-height: var(--line-height-22);
+		color: var(--color-text-primary);
+	}
+
+	.experience__panel-role {
+		margin: 0;
+		font-size: var(--font-size-15);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-20);
+		color: var(--color-text-primary);
+	}
+
+	.experience__panel-description {
+		flex: 1 1 auto;
+		width: 420px;
+		padding-top: 45px;
+	}
+
+	.experience__panel-description p {
+		margin: 0;
+		font-size: var(--font-size-16);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-24);
+		color: var(--color-text-primary);
+	}
+
+	.experience__panel-skills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-8);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.experience__panel-skills li {
+		padding: var(--space-8) var(--space-12);
+		border-radius: var(--radius-10);
+		background: var(--color-tag-bg);
+		color: var(--color-tag-text);
+		font-size: var(--font-size-11);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-14);
+		white-space: nowrap;
+	}
+
+	.experience__selector {
+		display: flex;
+		align-items: center;
+		gap: var(--space-16);
+		flex: 1 1 auto;
+		height: 520px;
+		min-inline-size: 0;
+	}
+
+	.experience__selector-viewport {
+		position: relative;
+		flex: 1 1 auto;
+		height: 100%;
+		overflow-y: auto;
+		scrollbar-width: none;
+	}
+
+	.experience__selector-viewport::-webkit-scrollbar {
+		display: none;
+	}
+
+	.experience__selector-content {
+		display: flex;
+		flex-direction: column;
+		min-inline-size: 0;
+		width: 100%;
+	}
+
+	.experience__item {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-16);
+		width: 100%;
+		min-height: 108px;
+		padding: var(--space-20) 0;
+		border: 0;
+		border-bottom: 1px solid var(--color-border-subtle);
+		background: transparent;
+		color: var(--color-text-primary);
+		text-align: left;
+		cursor: pointer;
+		transition: opacity var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
+	}
+
+	.experience__item:focus-visible {
+		outline: var(--border-width-2) solid var(--color-text-primary);
+		outline-offset: -2px;
+	}
+
+	.experience__item-copy {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		flex: 1 1 auto;
+		min-inline-size: 0;
+	}
+
+	.experience__item-company {
+		display: block;
+		font-size: 30px;
+		font-weight: var(--font-weight-light);
+		line-height: var(--line-height-38);
+		opacity: 0.72;
+		color: var(--color-text-primary);
+	}
+
+	.experience__item-role {
+		display: block;
+		font-size: var(--font-size-13);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-18);
+		opacity: 0.64;
+		color: var(--color-text-primary);
+	}
+
+	.experience__item-period {
+		display: block;
+		margin-inline-start: auto;
+		padding-top: 8px;
+		font-size: var(--font-size-12);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-14);
+		white-space: nowrap;
+		opacity: 0.64;
+		color: var(--color-text-primary);
+	}
+
+	.experience__item-indicator {
+		display: block;
+		inline-size: 8px;
+		height: 68px;
+		border-radius: 999px;
+		background: transparent;
+		opacity: 0.12;
+		transform: scaleY(0.85);
+		transition: opacity var(--motion-duration-base) var(--motion-ease-out), background var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
+	}
+
+	.experience__item.is-active {
+		background: transparent;
+	}
+
+	.experience__item.is-active .experience__item-company,
+	.experience__item.is-active .experience__item-role,
+	.experience__item.is-active .experience__item-period {
+		opacity: 1;
+	}
+
+	.experience__item.is-active .experience__item-indicator {
+		background: var(--color-sand-light);
+		opacity: 1;
+		transform: scaleY(1);
+	}
+
+	.experience__scrollbar {
+		position: relative;
+		inline-size: 8px;
+		height: 426px;
+	}
+
+	.experience__scrollbar-track {
+		display: block;
+		position: absolute;
+		left: 3px;
+		top: 18px;
+		inline-size: 2px;
+		height: 390px;
+		background: var(--color-border-strong);
+		opacity: 0.18;
+		border-radius: 999px;
+	}
+
+	.experience__scrollbar-thumb {
+		display: block;
+		position: absolute;
+		left: 1px;
+		top: 18px;
+		inline-size: 6px;
+		height: 78px;
+		background: var(--color-text-primary);
+		opacity: 0.8;
+		border-radius: 3px;
+		transition: top var(--motion-duration-base) var(--motion-ease-out);
+	}
+
+	@media (max-width: 1279px) {
+		.experience {
+			padding-inline: 40px;
+		}
+		.experience__surface {
+			padding: 64px 40px;
+		}
+		.experience__content {
+			gap: 32px;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.experience {
+			padding-block: var(--section-padding-y-mobile);
+			padding-inline: var(--layout-gutter-mobile);
+		}
+		.experience__surface {
+			padding: 40px 24px;
+			gap: 24px;
+		}
+		.experience__header h2 {
+			font-size: var(--font-size-heading-large);
+		}
+		.experience__content {
+			flex-direction: column;
+			gap: 24px;
+		}
+		.experience__panels {
+			inline-size: 100%;
+			height: 460px;
+		}
+		.experience__panel {
+			padding: 28px 24px 32px;
+		}
+		.experience__panel-heading,
+		.experience__panel-meta,
+		.experience__panel-description,
+		.experience__panel {
+			width: 100%;
+		}
+		.experience__panel-number {
+			font-size: 62px;
+		}
+		.experience__selector {
+			height: auto;
+			width: 100%;
+			flex-direction: column;
+		}
+		.experience__selector-viewport {
+			height: 360px;
+			width: 100%;
+		}
+		.experience__scrollbar {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.experience__panel,
+		.experience__item,
+		.experience__item-indicator,
+		.experience__scrollbar-thumb {
+			transition: none;
+		}
+	}
+</style>
