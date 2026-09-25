@@ -1,0 +1,447 @@
+---
+import { educationCourses } from '../data/education.js';
+
+const displayCourses = [...educationCourses, ...educationCourses.slice(0, 2)];
+---
+
+<section id="formacao" class="education-scroll" aria-labelledby="education-title">
+  <div class="education-scroll-area" id="education-scroll-area">
+    <div class="education-sticky">
+      <div class="education-content">
+        <div class="education-intro">
+          <p class="education-eyebrow">04 — FORMAÇÃO CONTÍNUA</p>
+          <h2 id="education-title">Aprender faz<br />parte do meu<br />processo.</h2>
+          <p class="education-description">Cursos livres que aprofundam minha atuação em interface, experiência, ferramentas e novos processos de design.</p>
+          <span class="education-accent" aria-hidden="true"></span>
+          <p class="education-note">Atualização contínua em UX/UI, IA e produto digital.</p>
+        </div>
+
+        <div class="education-roulette" aria-label="Lista de cursos de formação contínua">
+          <div class="education-viewport" id="education-viewport">
+            <div class="education-track" id="education-track">
+              {displayCourses.map((course, index) => (
+                <article class="education-item" data-course-index={index} data-course-id={course.id}>
+                  <div class="education-item-content">
+                    <p class="education-item-title">{course.title}</p>
+                    {course.institution && course.year ? (
+                      <p class="education-item-meta">{course.institution} · {course.year}</p>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="education-after-gap" aria-hidden="true"></div>
+
+  <div class="education-measurement" aria-hidden="true">
+    {displayCourses.map((course) => (
+      <div class="education-measurement-item">
+        <span class="education-measurement-title">{course.title}</span>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const section = document.querySelector<HTMLElement>('#formacao');
+  const scrollArea = document.querySelector<HTMLElement>('#education-scroll-area');
+  const viewport = document.querySelector<HTMLElement>('#education-viewport');
+  const track = document.querySelector<HTMLElement>('#education-track');
+  const items = [...document.querySelectorAll<HTMLElement>('.education-item')];
+  const measurementTitles = [...document.querySelectorAll<HTMLElement>('.education-measurement-title')];
+
+  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+  const STEP_SCROLL = 280;
+
+  const measureRouletteWidth = () => {
+    if (!measurementTitles.length || !section) return;
+
+    const widths = measurementTitles.map((title) => title.getBoundingClientRect().width || title.scrollWidth || 0);
+    const maxWidth = Math.max(...widths, 0);
+    const finalWidth = Math.ceil(maxWidth + 6);
+    section.style.setProperty('--education-roulette-width', `${finalWidth}px`);
+  };
+
+  const getScrollAreaHeight = () => window.innerHeight + (STEP_SCROLL * 4);
+
+  const getYOffset = (relative: number) => {
+    const points = [
+      { value: -2, offset: -180 },
+      { value: -1, offset: -100 },
+      { value: 0, offset: 0 },
+      { value: 1, offset: 100 },
+      { value: 2, offset: 180 },
+    ];
+
+    if (relative <= points[0].value) return points[0].offset;
+    if (relative >= points[points.length - 1].value) return points[points.length - 1].offset;
+
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const start = points[i];
+      const end = points[i + 1];
+
+      if (relative >= start.value && relative <= end.value) {
+        const ratio = (relative - start.value) / (end.value - start.value);
+        return start.offset + (end.offset - start.offset) * ratio;
+      }
+    }
+
+    return 0;
+  };
+
+  const updateRoulette = () => {
+    if (!section || !scrollArea || !viewport || !track || !items.length) return;
+
+    measureRouletteWidth();
+    scrollArea.style.height = `${getScrollAreaHeight()}px`;
+
+    const scrollDistance = Math.max(scrollArea.offsetHeight - window.innerHeight, 1);
+    const rect = scrollArea.getBoundingClientRect();
+    const scrolled = clamp(-rect.top, 0, scrollDistance);
+    const progress = scrollDistance > 0 ? scrolled / scrollDistance : 0;
+    const virtualActiveIndex = 2 + progress * 4;
+    const introRect = section.querySelector('.education-intro')?.getBoundingClientRect();
+    const viewportRect = viewport.getBoundingClientRect();
+    const anchorY = introRect
+      ? introRect.top + introRect.height / 2 - viewportRect.top
+      : viewportRect.height / 2;
+
+    items.forEach((item, index) => {
+      const relative = index - virtualActiveIndex;
+      const distance = Math.abs(relative);
+      const offsetY = getYOffset(relative);
+
+      item.classList.remove('is-active', 'is-near', 'is-far', 'is-hidden');
+
+      if (distance < 0.5) {
+        item.classList.add('is-active');
+      } else if (distance < 1.5) {
+        item.classList.add('is-near');
+      } else if (distance < 2.5) {
+        item.classList.add('is-far');
+      } else {
+        item.classList.add('is-hidden');
+      }
+
+      item.style.transform = `translateY(${anchorY + offsetY}px)`;
+    });
+  };
+
+  if (section && scrollArea && viewport && track && items.length) {
+    window.addEventListener('scroll', updateRoulette, { passive: true });
+    window.addEventListener('resize', updateRoulette);
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(updateRoulette);
+    }
+
+    updateRoulette();
+  }
+</script>
+
+<style>
+	:root {
+		--education-scroll-step: 65vh;
+		--education-roulette-width: 460px;
+	}
+
+	.education-scroll {
+		position: relative;
+		margin: 0;
+		overflow: visible;
+		color: var(--color-text-primary);
+	}
+
+	.education-scroll-area {
+		position: relative;
+		height: calc(100vh + 1120px);
+		overflow: visible;
+	}
+
+	.education-sticky {
+		position: sticky;
+		top: 0;
+		display: flex;
+		align-items: flex-start;
+		height: 100vh;
+		width: 100%;
+		overflow: visible;
+	}
+
+	.education-after-gap {
+		height: 100px;
+	}
+
+	.education-content {
+		display: grid;
+		grid-template-columns: 430px var(--education-roulette-width);
+		column-gap: 80px;
+		width: max-content;
+		max-width: calc(100% - 48px);
+		margin-inline: auto;
+		min-height: 520px;
+		align-items: center;
+		box-sizing: border-box;
+	}
+
+	.education-intro {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+		width: 430px;
+		max-width: 100%;
+		margin: 0;
+		align-self: center;
+	}
+
+	.education-eyebrow {
+		margin: 0;
+		font-size: var(--font-size-14);
+		font-weight: var(--font-weight-bold);
+		line-height: var(--line-height-18);
+		color: var(--color-text-primary);
+	}
+
+	.education-intro h2 {
+		margin: 0;
+		font-size: 48px;
+		font-weight: var(--font-weight-extra-bold);
+		line-height: 52px;
+		color: var(--color-text-primary);
+		letter-spacing: 0;
+	}
+
+	.education-description {
+		margin: 0;
+		width: 420px;
+		max-width: 100%;
+		font-size: var(--font-size-17);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-25);
+		color: var(--color-text-primary);
+	}
+
+	.education-accent {
+		display: block;
+		inline-size: 64px;
+		height: 4px;
+		border-radius: 2px;
+		background: #D9B9A7;
+	}
+
+	.education-note {
+		margin: 0;
+		font-size: var(--font-size-13);
+		font-weight: var(--font-weight-light);
+		line-height: var(--line-height-18);
+		color: var(--color-text-primary);
+	}
+
+	.education-roulette {
+		width: var(--education-roulette-width);
+		height: 520px;
+		max-width: 100%;
+		align-self: center;
+	}
+
+	.education-viewport {
+		position: relative;
+		overflow: hidden;
+		height: 520px;
+		width: var(--education-roulette-width);
+		max-width: 100%;
+		margin: 0;
+		align-self: center;
+	}
+
+	.education-track {
+		position: absolute;
+		inset: 0;
+		width: var(--education-roulette-width);
+		will-change: transform;
+	}
+
+	.education-item {
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: flex;
+		align-items: center;
+		width: max-content;
+		max-width: 100%;
+		height: 64px;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(0);
+		transition: opacity 0.2s ease, transform 0.18s linear;
+	}
+
+	.education-item-content {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		width: max-content;
+		max-width: 100%;
+		transition: padding-left 0.2s ease;
+	}
+
+	.education-item.is-active {
+		opacity: 1;
+	}
+
+	.education-item.is-near {
+		opacity: 0.5;
+	}
+
+	.education-item.is-far {
+		opacity: 0.5;
+	}
+
+	.education-item.is-hidden {
+		opacity: 0;
+	}
+
+	.education-item.is-active .education-item-content {
+		padding-left: 0;
+	}
+
+	.education-item.is-near .education-item-content {
+		padding-left: 12px;
+	}
+
+	.education-item.is-far .education-item-content {
+		padding-left: 32px;
+	}
+
+	.education-item-title {
+		margin: 0;
+		font-size: 22px;
+		font-weight: var(--font-weight-light);
+		line-height: 30px;
+		color: var(--color-text-primary);
+		white-space: nowrap;
+		transition: font-size 0.2s ease, line-height 0.2s ease;
+	}
+
+	.education-measurement {
+		position: absolute;
+		visibility: hidden;
+		pointer-events: none;
+		overflow: hidden;
+		inset: 0 auto auto 0;
+		white-space: nowrap;
+	}
+
+	.education-measurement-item {
+		display: block;
+		width: max-content;
+	}
+
+	.education-measurement-title {
+		display: inline-block;
+		font-size: 40px;
+		font-weight: var(--font-weight-light);
+		line-height: 50px;
+		letter-spacing: 0;
+		white-space: nowrap;
+		color: var(--color-text-primary);
+	}
+
+	.education-item.is-active .education-item-title {
+		font-size: 40px;
+		line-height: 50px;
+	}
+
+	.education-item.is-near .education-item-title {
+		font-size: 30px;
+		line-height: 40px;
+	}
+
+	.education-item.is-far .education-item-title {
+		font-size: 22px;
+		line-height: 30px;
+	}
+
+	.education-item-meta {
+		display: none;
+		margin: 0;
+		font-size: var(--font-size-13);
+		font-weight: var(--font-weight-regular);
+		line-height: 18px;
+		color: var(--color-text-primary);
+	}
+
+	.education-item.is-active .education-item-meta {
+		display: block;
+	}
+
+	@media (max-width: 1279px) {
+		.education-content {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 32px;
+			width: min(calc(100% - 80px), 100%);
+			max-width: 100%;
+			padding-inline: 0;
+		}
+		.education-intro {
+			width: 100%;
+		}
+		.education-roulette,
+		.education-viewport,
+		.education-track,
+		.education-item {
+			max-width: 100%;
+			width: 100%;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.education-sticky {
+			height: auto;
+			min-height: 100vh;
+			align-items: center;
+		}
+		.education-content {
+			padding-inline: 24px;
+			gap: 24px;
+		}
+		.education-intro {
+			gap: 16px;
+		}
+		.education-intro h2 {
+			font-size: 30px;
+			line-height: 38px;
+		}
+		.education-description {
+			max-width: 100%;
+			width: 100%;
+			font-size: var(--font-size-16);
+		}
+		.education-viewport {
+			height: 420px;
+		}
+		.education-item {
+			padding-left: 16px;
+		}
+		.education-item.is-near {
+			padding-left: 12px;
+		}
+		.education-item.is-far {
+			padding-left: 16px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.education-track,
+		.education-item,
+		.education-item-title {
+			transition: none;
+		}
+	}
+</style>
