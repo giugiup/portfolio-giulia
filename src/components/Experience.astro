@@ -47,6 +47,7 @@ const activeExperience = experiences[0];
 								type="button"
 								class:list={['experience__item', { 'is-active': index === 0 }]}
 								data-experience-button={experience.id}
+								data-cursor="view"
 								aria-selected={index === 0 ? 'true' : 'false'}
 								aria-pressed={index === 0 ? 'true' : 'false'}
 								aria-controls={`experience-panel-${experience.id}`}
@@ -332,7 +333,7 @@ const activeExperience = experiences[0];
 		background: transparent;
 		color: var(--color-text-primary);
 		text-align: left;
-		cursor: pointer;
+		cursor: none;
 		transition: opacity var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
 	}
 

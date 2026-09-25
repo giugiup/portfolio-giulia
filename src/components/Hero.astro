@@ -1,10 +1,13 @@
 ---
 import Button from './Button.astro';
+import HeroMesh from './HeroMesh.astro';
 
 const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 ---
 
 <section class="hero" aria-labelledby="hero-title">
+	<HeroMesh />
+	<div class="hero__mesh-fade" aria-hidden="true"></div>
 	<div class="hero__content">
 		<div class="hero__logo" aria-hidden={!logoSrc ? 'true' : undefined}>
 			{logoSrc && <img src={logoSrc} alt="Giulia" width="121.578" height="92" />}
@@ -32,13 +35,43 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 
 <style>
 	.hero {
+		position: relative;
+		z-index: 0;
+		isolation: isolate;
+		overflow: hidden;
 		background-color: var(--color-bg-page);
 		/* Transformação radial do node 331:1299: raios 844.17 × 506.5;
 		 * centro 720,357.5 no frame 1440 × 864, preservados proporcionalmente. */
 		background-image: radial-gradient(ellipse 58.6229167% 58.6226852% at 50% 41.3773148%, var(--color-wine) 0%, var(--color-hero-gradient-mid) 50%, var(--color-dark) 100%);
 		color: var(--color-text-primary);
 	}
+	.hero__mesh {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+	.hero__mesh-fade {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(
+			to bottom,
+			rgba(13, 3, 5, 0) 0%,
+			rgba(13, 3, 5, 0.16) 46%,
+			rgba(13, 3, 5, 0.38) 66%,
+			rgba(13, 3, 5, 0.8) 100%
+		);
+	}
+	.hero__mesh-canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
 	.hero__content {
+		position: relative;
+		z-index: 2;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -69,6 +102,8 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 		overflow-wrap: anywhere;
 	}
 	.hero__brands {
+		position: relative;
+		z-index: 2;
 		display: flex;
 		align-items: flex-start;
 		min-block-size: 200px;

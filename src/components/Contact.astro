@@ -1,0 +1,181 @@
+---
+const { href } = Astro.props;
+---
+
+<section class="contact" id="contato" aria-labelledby="contact-title">
+	<div class="contact__top" aria-hidden="true"></div>
+
+	<div class="contact__surface">
+		<h2 class="contact__title" id="contact-title">Vamos conversar?</h2>
+
+		<p class="contact__description">
+			Se quiser conversar sobre produto, interface, design ou uma oportunidade de trabalho, estou por aqui.
+		</p>
+
+		<a class="contact__cta" href={href} aria-label="Entre em contato" data-cursor="contact">
+			<span class="contact__cta-label">Entre em contato</span>
+			<span class="contact__cta-icon" aria-hidden="true">
+				<img src="/icons/arrow-northeast.svg" alt="" width="18" height="18" />
+			</span>
+		</a>
+	</div>
+</section>
+
+<style>
+	.contact {
+		width: 100%;
+		background: transparent;
+		color: var(--color-text-primary);
+	}
+
+	.contact__top {
+		height: 32px;
+		margin-inline: 0;
+		background: transparent;
+		border-radius: 32px 32px 0 0;
+	}
+
+	.contact__surface {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 28px;
+		width: 100%;
+		padding: 96px 80px 128px;
+		border-radius: 32px 32px 0 0;
+		overflow: hidden;
+		background: var(--color-bg-page);
+		box-sizing: border-box;
+	}
+
+	.contact__title {
+		margin: 0;
+		width: 100%;
+		max-width: 1000px;
+		font-family: var(--font-family-base);
+		font-size: var(--font-size-section-display-desktop);
+		font-weight: var(--font-weight-extra-bold);
+		line-height: normal;
+		text-align: center;
+		letter-spacing: 0;
+		color: var(--color-text-primary);
+	}
+
+	.contact__description {
+		margin: 0;
+		width: 100%;
+		max-width: 760px;
+		font-family: var(--font-family-base);
+		font-size: var(--font-size-18);
+		font-weight: var(--font-weight-regular);
+		line-height: normal;
+		text-align: center;
+		color: var(--color-text-primary);
+	}
+
+	.contact__cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--cta-gap);
+		min-height: 48px;
+		padding: 14px 24px;
+		border-radius: var(--radius-full);
+		background: var(--color-sand);
+		color: var(--color-text-inverse);
+		font-family: var(--font-family-base);
+		font-size: var(--font-size-16);
+		font-weight: var(--font-weight-bold);
+		line-height: normal;
+		text-align: center;
+		text-decoration: none;
+		transition: transform var(--motion-duration-micro) var(--motion-ease-out),
+			filter var(--motion-duration-micro) var(--motion-ease-out),
+			opacity var(--motion-duration-micro) var(--motion-ease-out);
+	}
+
+	.contact__cta:visited {
+		color: var(--color-text-inverse);
+	}
+
+	.contact__cta:hover {
+		transform: translateY(-2px);
+		filter: brightness(0.98);
+	}
+
+	.contact__cta:focus-visible {
+		outline: 2px solid var(--color-text-primary);
+		outline-offset: 4px;
+	}
+
+	.contact__cta:active {
+		transform: translateY(0);
+	}
+
+	.contact__cta-label {
+		display: inline-block;
+		color: var(--color-text-inverse);
+	}
+
+	.contact__cta-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 18px;
+		height: 18px;
+		flex: 0 0 18px;
+	}
+
+	.contact__cta-icon img {
+		display: block;
+		width: 18px;
+		height: 18px;
+	}
+
+	@media (max-width: 1279px) {
+		.contact__top {
+			height: 32px;
+			margin-inline: 32px;
+		}
+
+		.contact__surface {
+			padding: calc(var(--section-padding-y-large-tablet) - 32px) var(--layout-gutter-tablet) var(--section-padding-y-large-tablet);
+		}
+
+		.contact__title {
+			font-size: var(--font-size-section-display-tablet);
+		}
+	}
+
+	@media (max-width: 767px) {
+		.contact__top {
+			height: 24px;
+			margin-inline: 16px;
+			border-radius: 24px 24px 0 0;
+		}
+
+		.contact__surface {
+			padding: calc(var(--section-padding-y-large-mobile) - 24px) var(--layout-gutter-mobile) var(--section-padding-y-large-mobile);
+			gap: 24px;
+		}
+
+		.contact__title {
+			font-size: var(--font-size-section-display-mobile);
+		}
+
+		.contact__description {
+			max-width: 100%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.contact__cta {
+			transition: none;
+		}
+
+		.contact__cta:hover,
+		.contact__cta:active {
+			transform: none;
+		}
+	}
+</style>

@@ -13,8 +13,8 @@ const { id, title, description, tags, height = 600, href, image } = Astro.props;
 const Card = href ? 'a' : 'div';
 ---
 
-<article aria-labelledby={`${id}-title`}>
-	<Card class="project-card" href={href} style={`--project-height: ${height}px; --project-ratio: 400 / ${height}`}>
+<article aria-labelledby={`${id}-title`} data-cursor="project">
+	<Card class="project-card" href={href} style={`--project-height: ${height}px; --project-ratio: 400 / ${height}`} data-cursor="project">
 		{image && <img class="project-card__cover" src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />}
 		<div class="project-card__header" aria-hidden="true">
 			<span class="project-card__arrow">

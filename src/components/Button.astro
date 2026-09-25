@@ -6,6 +6,7 @@ const {
 	showIcon = true,
 	iconSrc,
 	disabled = false,
+	dataCursor = variant === 'header' || variant === 'hero' ? 'contact' : 'open',
 } = Astro.props;
 const Tag = href ? 'a' : 'button';
 ---
@@ -15,6 +16,7 @@ const Tag = href ? 'a' : 'button';
 	href={href}
 	type={!href ? 'button' : undefined}
 	disabled={!href && disabled ? true : undefined}
+	data-cursor={dataCursor}
 >
 	<span>{text}</span>
 	{showIcon && (
@@ -42,7 +44,7 @@ const Tag = href ? 'a' : 'button';
 		line-height: var(--line-height-28);
 		text-align: center;
 		text-decoration: none;
-		cursor: pointer;
+		cursor: none;
 		transition: background-color var(--motion-duration-micro) var(--motion-ease-out);
 	}
 

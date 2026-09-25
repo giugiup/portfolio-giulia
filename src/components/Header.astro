@@ -19,7 +19,7 @@ const navigation = [
 		) : <div class="site-header__logo" aria-hidden="true"></div>}
 		<nav class="site-header__nav" aria-label="Navegação principal">
 			<ul>
-				{navigation.map(({ text, href }) => <li><a href={href}>{text}</a></li>)}
+				{navigation.map(({ text, href }) => <li><a href={href} data-cursor="open">{text}</a></li>)}
 			</ul>
 		</nav>
 		<div class="site-header__actions">
@@ -34,27 +34,49 @@ const navigation = [
 
 <style>
 	.site-header {
-		background-color: var(--color-bg-page);
+		position: sticky;
+		top: 0;
+		z-index: 1000;
+		isolation: isolate;
+		background-color: var(--color-dark);
 		border-block-end: var(--border-width-1) solid var(--color-border-subtle);
 	}
 	.site-header__inner {
-		display: flex;
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--space-24);
 		min-block-size: calc(var(--nav-height) - var(--border-width-1));
 		padding-inline: var(--layout-gutter);
+		background: transparent;
 	}
 	.site-header__logo {
 		position: relative;
+		z-index: 2;
 		display: block;
-		flex: 0 0 91px;
-		inline-size: 91px;
-		block-size: 59px;
+		justify-self: start;
+		flex: 0 0 72px;
+		inline-size: 72px;
+		block-size: auto;
+		pointer-events: auto;
 	}
-	.site-header__logo img { position: absolute; inset-block-start: 0; inset-inline-start: 6.98%; }
+	.site-header__logo img {
+		display: block;
+		width: 72px;
+		height: auto;
+		max-height: 47px;
+		object-fit: contain;
+	}
 	/* PROVISÓRIO: navegação completa somente a partir de 1280px. */
-	.site-header__nav { display: none; }
+	.site-header__nav {
+		display: none;
+		justify-self: center;
+		position: relative;
+		z-index: 2;
+		pointer-events: auto;
+	}
 	.site-header__nav ul {
 		display: flex;
 		align-items: center;
@@ -76,7 +98,15 @@ const navigation = [
 		outline: var(--border-width-2) solid var(--color-text-primary);
 		outline-offset: var(--space-4);
 	}
-	.site-header__actions { display: flex; align-items: center; gap: var(--space-12); }
+	.site-header__actions {
+		display: flex;
+		align-items: center;
+		justify-self: end;
+		gap: var(--space-12);
+		position: relative;
+		z-index: 2;
+		pointer-events: auto;
+	}
 	.availability {
 		display: none;
 		align-items: center;
@@ -97,11 +127,36 @@ const navigation = [
 		block-size: 5px;
 		border-radius: var(--radius-full);
 		background-color: var(--color-status-available);
+		animation: availability-pulse 1.8s ease-in-out infinite;
+		transform-origin: center;
+	}
+
+	@keyframes availability-pulse {
+		0%,
+		100% {
+			opacity: 0.55;
+			transform: scale(0.9);
+			box-shadow: 0 0 0 0 rgba(180, 221, 50, 0);
+		}
+
+		50% {
+			opacity: 1;
+			transform: scale(1);
+			box-shadow: 0 0 0 4px rgba(180, 221, 50, 0.12);
+		}
 	}
 	/* PROVISÓRIO: badge oculto no mobile para preservar logo e CTA. */
 	@media (min-width: 768px) { .availability { display: inline-flex; } }
 	@media (min-width: 1280px) {
 		.site-header__inner { padding-inline: var(--space-40); }
 		.site-header__nav { display: block; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.availability__dot {
+			animation: none;
+			opacity: 1;
+			transform: none;
+			box-shadow: none;
+		}
 	}
 </style>

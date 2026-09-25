@@ -16,6 +16,157 @@ const { title = 'Portfólio', description, lang = 'pt-BR' } = Astro.props;
 		<title>{title}</title>
 	</head>
 	<body>
+		<div class="custom-cursor" aria-hidden="true">
+			<span class="custom-cursor__pointer" aria-hidden="true">
+				<img src="/icons/about-pointer.svg" alt="" width="15.5117" height="15.1156" />
+			</span>
+			<span class="custom-cursor__label">
+				<span class="custom-cursor__label-text">Você</span>
+			</span>
+		</div>
 		<slot />
+
+		<style>
+			.custom-cursor {
+				position: fixed;
+				top: 0;
+				left: 0;
+				z-index: 10000;
+				pointer-events: none;
+				opacity: 0;
+				transform: translate3d(-9999px, -9999px, 0);
+				transition: opacity 140ms ease;
+				will-change: transform;
+			}
+			.custom-cursor.is-visible {
+				opacity: 1;
+			}
+			.custom-cursor.is-pressed .custom-cursor__label {
+				transform: translate(10px, 8px) scale(0.94);
+			}
+			.custom-cursor__label {
+				position: relative;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				padding: 6px 14px 6px 18px;
+				border-radius: var(--radius-full);
+				background: var(--color-sand-light);
+				color: var(--color-text-inverse);
+				font-size: var(--font-size-14);
+				font-weight: var(--font-weight-regular);
+				line-height: 1;
+				letter-spacing: 0;
+				transform: translate(10px, 8px);
+				transition: transform 140ms ease, opacity 140ms ease;
+			}
+			.custom-cursor__pointer {
+				position: absolute;
+				left: 0;
+				top: 2px;
+				transform: rotate(18deg);
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 18px;
+				height: 18px;
+			}
+			.custom-cursor__pointer img {
+				display: block;
+				max-inline-size: none;
+				width: 18px;
+				height: auto;
+			}
+			@media (hover: hover) and (pointer: fine) {
+				html.cursor-enabled,
+				html.cursor-enabled body,
+				html.cursor-enabled a,
+				html.cursor-enabled button,
+				html.cursor-enabled [data-cursor] {
+					cursor: none;
+				}
+				html.cursor-enabled input,
+				html.cursor-enabled textarea,
+				html.cursor-enabled select,
+				html.cursor-enabled option,
+				html.cursor-enabled [contenteditable='true'],
+				html.cursor-enabled [contenteditable=''] {
+					cursor: auto;
+				}
+			}
+		</style>
+
+		<script>
+			(() => {
+				const root = document.documentElement;
+				const cursor = document.querySelector('.custom-cursor');
+				const labelText = document.querySelector('.custom-cursor__label-text');
+				if (!cursor || !labelText) return;
+
+				const pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+				const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+				if (!pointerQuery.matches || reducedMotionQuery.matches) {
+					root.classList.remove('cursor-enabled');
+					return;
+				}
+
+				const labels = {
+					default: 'Você',
+					open: 'Abrir',
+					project: 'Ver projeto',
+					contact: 'Contato',
+					view: 'Ver',
+				};
+
+				let pointerX = window.innerWidth / 2;
+				let pointerY = window.innerHeight / 2;
+				let currentX = pointerX;
+				let currentY = pointerY;
+
+				const setLabel = (key) => {
+					const nextLabel = labels[key] || labels.default;
+					labelText.textContent = nextLabel;
+				};
+
+				const animate = () => {
+					currentX += (pointerX - currentX) * 0.32;
+					currentY += (pointerY - currentY) * 0.32;
+					cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+					requestAnimationFrame(animate);
+				};
+
+				const showCursor = () => cursor.classList.add('is-visible');
+				const hideCursor = () => cursor.classList.remove('is-visible');
+
+				root.classList.add('cursor-enabled');
+				setLabel('default');
+				showCursor();
+				requestAnimationFrame(animate);
+
+				document.addEventListener('pointermove', (event) => {
+					pointerX = event.clientX;
+					pointerY = event.clientY;
+					showCursor();
+				}, { passive: true });
+
+				document.addEventListener('pointerleave', hideCursor);
+				window.addEventListener('pointerdown', () => cursor.classList.add('is-pressed'));
+				window.addEventListener('pointerup', () => cursor.classList.remove('is-pressed'));
+				window.addEventListener('blur', hideCursor);
+				window.addEventListener('focus', showCursor);
+				window.addEventListener('mouseleave', hideCursor);
+
+				document.querySelectorAll('[data-cursor]').forEach((element) => {
+					element.addEventListener('mouseenter', () => {
+						const key = element.getAttribute('data-cursor') || 'default';
+						setLabel(key);
+					});
+
+					element.addEventListener('mouseleave', () => {
+						setLabel('default');
+					});
+				});
+			})();
+		</script>
 	</body>
 </html>

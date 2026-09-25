@@ -6,6 +6,8 @@ import Projects from '../components/Projects.astro';
 import About from '../components/About.astro';
 import Experience from '../components/Experience.astro';
 import Education from '../components/Education.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
 import { brands } from '../data/brands.js';
 
 const contactHref = 'https://wa.me/5511930591609';
@@ -22,5 +24,7 @@ const arrowIconSrc = '/icons/arrow-northeast.svg';
 		<About />
 		<Experience />
 		<Education />
+		<Contact href={contactHref} />
+		<Footer />
 	</main>
 </Layout>
