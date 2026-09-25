@@ -42,14 +42,17 @@ const { title = 'Portfólio', description, lang = 'pt-BR' } = Astro.props;
 				opacity: 1;
 			}
 			.custom-cursor.is-pressed .custom-cursor__label {
-				transform: translate(10px, 8px) scale(0.94);
+				transform: translate(14px, 14px) scale(0.96);
 			}
 			.custom-cursor__label {
 				position: relative;
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				padding: 6px 14px 6px 18px;
+				box-sizing: border-box;
+				padding-inline: 8px;
+				padding-block: 6px;
+				min-inline-size: 0;
 				border-radius: var(--radius-full);
 				background: var(--color-sand-light);
 				color: var(--color-text-inverse);
@@ -57,8 +60,20 @@ const { title = 'Portfólio', description, lang = 'pt-BR' } = Astro.props;
 				font-weight: var(--font-weight-regular);
 				line-height: 1;
 				letter-spacing: 0;
-				transform: translate(10px, 8px);
-				transition: transform 140ms ease, opacity 140ms ease;
+				text-align: center;
+				white-space: nowrap;
+				transform: translate(14px, 14px);
+				transition: width 160ms ease-out, transform 160ms ease-out, opacity 120ms ease-out, scale 160ms ease-out;
+			}
+			.custom-cursor__label-text {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				white-space: nowrap;
+				opacity: 1;
+				transform: scale(1);
+				transition: opacity 120ms ease-out, transform 160ms ease-out;
 			}
 			.custom-cursor__pointer {
 				position: absolute;
@@ -125,7 +140,23 @@ const { title = 'Portfólio', description, lang = 'pt-BR' } = Astro.props;
 
 				const setLabel = (key) => {
 					const nextLabel = labels[key] || labels.default;
+					const label = document.querySelector('.custom-cursor__label');
+					if (!label) return;
+
+					const previousWidth = label.offsetWidth || 0;
 					labelText.textContent = nextLabel;
+					labelText.style.opacity = '0';
+					labelText.style.transform = 'scale(0.96)';
+
+					requestAnimationFrame(() => {
+						const measuredWidth = Math.max(26, labelText.offsetWidth + 16);
+						label.style.width = `${measuredWidth}px`;
+						label.style.transition = 'width 160ms ease-out, transform 160ms ease-out, opacity 120ms ease-out';
+						labelText.style.opacity = '1';
+						labelText.style.transform = 'scale(1)';
+					});
+
+					label.style.width = `${previousWidth || Math.max(26, labelText.offsetWidth + 16)}px`;
 				};
 
 				const animate = () => {

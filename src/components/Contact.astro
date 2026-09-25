@@ -94,6 +94,12 @@ const { href } = Astro.props;
 			opacity var(--motion-duration-micro) var(--motion-ease-out);
 	}
 
+	@media (hover: hover) and (pointer: fine) {
+		.contact__cta {
+			cursor: none;
+		}
+	}
+
 	.contact__cta:visited {
 		color: var(--color-text-inverse);
 	}

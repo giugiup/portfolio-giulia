@@ -1,0 +1,113 @@
+{
+  "inputs": [],
+  "servers": {
+    "figma": {
+      "url": "https://mcp.figma.com/mcp",
+      "type": "http"
+    }
+  }
+}Quero corrigir somente a cor que aparece atrás dos cantos arredondados da seção Contact.
+
+O border-radius agora está correto, mas o wrapper externo ficou mostrando o background base/degradê da página.
+
+Isso NÃO deve acontecer.
+
+==================================================
+OBJETIVO
+==================================================
+
+Os cantos arredondados superiores do Contact devem revelar exatamente a MESMA cor sólida usada na seção:
+
+04 — Formação contínua.
+
+Não usar:
+- background transparente;
+- background global;
+- gradiente do frame base.
+
+==================================================
+1. IDENTIFICAR A COR REAL DA EDUCATION
+==================================================
+
+Inspecione a implementação atual da Education.
+
+Descubra qual token/cor está sendo usado como fundo sólido visível da seção 04.
+
+Reutilize exatamente esse mesmo token.
+
+Não crie uma cor nova se já existir.
+
+==================================================
+2. CONTACT WRAPPER
+==================================================
+
+O wrapper externo do Contact deve usar:
+
+background: MESMO_BACKGROUND_DA_EDUCATION;
+
+A surface interna continua usando o background escuro do Contact.
+
+Conceitualmente:
+
+.contact {
+  background: var(--mesmo-token-da-education);
+}
+
+.contact__surface {
+  background: var(--color-bg-page);
+  border-radius: 32px 32px 0 0;
+  overflow: hidden;
+}
+
+==================================================
+3. NÃO USAR O BACKGROUND GLOBAL
+==================================================
+
+Não deixe o wrapper herdar:
+
+- linear-gradient;
+- background do body;
+- background do Desktop.v4;
+- background transparente.
+
+Quero uma cor sólida explícita igual à Education.
+
+==================================================
+4. NÃO ALTERAR
+==================================================
+
+Não alterar:
+- border-radius atual;
+- conteúdo;
+- CTA;
+- padding;
+- Contact interno;
+- Footer;
+- Education;
+- animações;
+- gaps.
+
+Somente a cor atrás dos cantos.
+
+==================================================
+5. VALIDAR VISUALMENTE
+==================================================
+
+Depois da mudança, quero ver:
+
+Education
+↓
+mesma cor sólida aparecendo nos recortes dos cantos
+╭────────────────────────────╮
+│          Contact           │
+│                            │
+
+Não pode existir mudança de cor ou degradê nos cantos.
+
+Execute npm run build.
+
+No relatório confirme:
+1. qual token/cor a Education usa;
+2. qual token/cor foi aplicado no wrapper do Contact;
+3. confirmação de que o degradê/base não aparece mais nos cantos;
+4. confirmação de que o radius de 32px foi preservado.
