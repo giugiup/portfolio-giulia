@@ -8,7 +8,6 @@ import Experience from '../components/Experience.astro';
 import Education from '../components/Education.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
-import { brands } from '../data/brands.js';
 
 const contactHref = 'https://wa.me/5511930591609';
 const headerLogoSrc = '/images/giulia-logo-header.svg';
@@ -19,7 +18,7 @@ const arrowIconSrc = '/icons/arrow-northeast.svg';
 <Layout>
 	<Header contactHref={contactHref} logoSrc={headerLogoSrc} arrowIconSrc={arrowIconSrc} />
 	<main>
-		<Hero contactHref={contactHref} logoSrc={heroLogoSrc} arrowIconSrc={arrowIconSrc} brands={brands} />
+		<Hero contactHref={contactHref} logoSrc={heroLogoSrc} arrowIconSrc={arrowIconSrc} />
 		<Projects />
 		<About />
 		<Experience />

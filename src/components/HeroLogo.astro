@@ -1,0 +1,59 @@
+---
+import artwork from '../../public/images/giulia-logo-hero.svg?raw';
+---
+
+<span class="hero-logo" role="img" aria-label="Giulia">
+	<span aria-hidden="true" set:html={artwork} />
+</span>
+
+<style>
+	.hero-logo {
+		position: absolute;
+		inset-block-start: 0;
+		inset-inline-start: 6.98%;
+		display: block;
+		inline-size: 121.578px;
+		block-size: 92px;
+	}
+
+	.hero-logo :global(svg) { pointer-events: none; }
+
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.hero-logo :global(#G) {
+			/* Centraliza o G (48.3899) na largura original do SVG (121.578). */
+			transform: translateX(36.59405px);
+			transition: transform 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
+		}
+		.hero-logo:hover :global(#G) { transform: translateX(0); }
+
+		.hero-logo :global(#Dot),
+		.hero-logo :global(#I),
+		.hero-logo :global(#U) {
+			transform-box: fill-box;
+			transform-origin: center;
+			opacity: 0;
+			transition: opacity 160ms ease-out, transform 160ms ease-out;
+		}
+		.hero-logo :global(#Dot) { transform: scale(0.65); }
+		.hero-logo :global(#I) { transform: translateY(-12px); }
+		.hero-logo :global(#U) { transform: translateX(5px) scale(0.94); }
+
+		/* Hover: sequência original ampliada de 300ms para 800ms. */
+		.hero-logo:hover :global(#Dot) {
+			transition: opacity 160ms ease-out 187ms, transform 160ms ease-out 187ms;
+		}
+		.hero-logo:hover :global(#I) {
+			transition: opacity 80ms ease-out 347ms, transform 293ms cubic-bezier(0.2, 1.5, 0.5, 1) 347ms;
+		}
+		.hero-logo:hover :global(#U) {
+			transition: opacity 240ms ease-out 560ms, transform 240ms ease-out 560ms;
+		}
+
+		.hero-logo:hover :global(#Dot),
+		.hero-logo:hover :global(#I),
+		.hero-logo:hover :global(#U) {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>

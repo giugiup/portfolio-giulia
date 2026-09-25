@@ -1,8 +1,10 @@
 ---
 import Button from './Button.astro';
 import HeroMesh from './HeroMesh.astro';
+import HeroLogo from './HeroLogo.astro';
+import { heroLogos } from '../data/heroLogos.js';
 
-const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
+const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 ---
 
 <section class="hero" aria-labelledby="hero-title">
@@ -10,7 +12,7 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 	<div class="hero__mesh-fade" aria-hidden="true"></div>
 	<div class="hero__content">
 		<div class="hero__logo" aria-hidden={!logoSrc ? 'true' : undefined}>
-			{logoSrc && <img src={logoSrc} alt="Giulia" width="121.578" height="92" />}
+			{logoSrc && <HeroLogo />}
 		</div>
 		<h1 id="hero-title">
 			<span>Projetos que conectam</span>
@@ -19,15 +21,18 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 		<p class="hero__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet dui nec odio tempor tempor ut sed purus. Morbi tempus justo eu bibendum convallis.</p>
 		<Button text="Entre em contato" href={contactHref} variant="hero" iconSrc={arrowIconSrc} disabled={!contactHref} />
 	</div>
-	<!-- Estado Start do carrossel do Figma, estático nesta etapa. -->
-	<div class="hero__brands" aria-hidden={brands.length === 0 ? 'true' : undefined}>
+	<div class="hero__brands" aria-hidden={heroLogos.length === 0 ? 'true' : undefined}>
 		<div class="hero__brands-viewport">
-			{brands.length > 0 && (
-				<ul class="hero__brands-list" aria-label="Marcas">
-					{brands.map(({ src, alt, width, height, cropped }) => (
-						<li class:list={{ 'hero__brand-crop': cropped }}><img src={src} alt={alt} width={width} height={height} loading="lazy" /></li>
+			{heroLogos.length > 0 && (
+				<div class="hero__brands-track">
+					{[0, 1].map((cycle) => (
+						<ul class="hero__brands-list" aria-label={cycle === 0 ? 'Marcas' : undefined} aria-hidden={cycle === 1 ? 'true' : undefined}>
+							{heroLogos.map(({ src, alt, width, height, cropped }) => (
+								<li class:list={{ 'hero__brand-crop': cropped }} style={cropped ? `inline-size: ${width}px` : undefined}><img src={src} alt={alt} width={width} height={height} loading="lazy" /></li>
+							))}
+						</ul>
 					))}
-				</ul>
+				</div>
 			)}
 		</div>
 	</div>
@@ -80,7 +85,6 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 		text-align: center;
 	}
 	.hero__logo { position: relative; inline-size: 141px; block-size: 92px; flex: none; }
-	.hero__logo img { position: absolute; inset-block-start: 0; inset-inline-start: 6.98%; }
 	.hero h1 {
 		max-inline-size: 980px;
 		margin: 0;
@@ -112,7 +116,7 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 	}
 	.hero__brands-viewport {
 		position: relative;
-		overflow: clip;
+		overflow: hidden;
 		inline-size: 100%;
 		max-inline-size: var(--layout-content-max);
 		min-block-size: 160px;
@@ -121,23 +125,40 @@ const { contactHref, logoSrc, arrowIconSrc, brands = [] } = Astro.props;
 		mask-size: 100% 160px;
 		mask-repeat: no-repeat;
 	}
-	.hero__brands-list {
+	.hero__brands-track {
 		position: absolute;
 		inset-block-start: 50px;
 		inset-inline-start: -112px;
 		display: flex;
+		inline-size: max-content;
+		gap: 0;
+		animation: logos-marquee 28s linear infinite;
+		will-change: transform;
+	}
+	.hero__brands-list {
+		display: flex;
 		align-items: center;
+		flex: none;
 		gap: var(--space-80);
 		block-size: 59px;
-		inline-size: 2235px;
 		margin: 0;
 		padding: 0;
+		padding-right: var(--space-80);
 		list-style: none;
+	}
+	@keyframes logos-marquee {
+		from { transform: translate3d(0, 0, 0); }
+		to { transform: translate3d(-50%, 0, 0); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.hero__brands-track { animation: none; will-change: auto; }
+		.hero__brands-list[aria-hidden="true"] { display: none; }
 	}
 	.hero__brands-list li { flex: none; }
 	.hero__brands-list img { max-inline-size: none; }
+	.hero__brands-list li:not(.hero__brand-crop) img { height: auto; object-fit: contain; }
 	/* Transformação de image fill do node 324:220, preservando a fonte original. */
-	.hero__brand-crop { position: relative; overflow: hidden; inline-size: 206px; block-size: 53px; }
+	.hero__brand-crop { position: relative; overflow: hidden; aspect-ratio: 206 / 53; }
 	.hero__brand-crop img {
 		position: absolute;
 		inline-size: 108.47%;
