@@ -17,11 +17,14 @@ import { skills } from '../data/skills.js';
 			<p class="about__eyebrow">02 — SOBRE MIM</p>
 			<h2 id="about-title">Transformo repertório visual em interfaces mais claras e funcionais.</h2>
 			<p class="about__description">Sou designer com base em comunicação visual, web e experiência digital. Ao longo da minha trajetória, atuei com branding, social media, websites, landing pages e UX/UI, desenvolvendo soluções que equilibram estética, clareza e objetivos de negócio. Hoje, direciono meu trabalho para interfaces, sistemas e experiências digitais cada vez mais consistentes.</p>
-			<!-- Estado estático do Figma: track deslocado -90px; movimento pendente. -->
 			<div class="about__skills">
-				<ul class="about__skills-track" aria-label="Habilidades" role="list">
-					{skills.map((skill) => <li>{skill}</li>)}
-				</ul>
+				<div class="about__skills-track">
+					{[0, 1].map((cycle) => (
+						<ul class="about__skills-cycle" aria-label={cycle === 0 ? 'Habilidades' : undefined} aria-hidden={cycle === 1 ? 'true' : undefined} role="list">
+							{skills.map((skill) => <li>{skill}</li>)}
+						</ul>
+					))}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -35,6 +38,7 @@ import { skills } from '../data/skills.js';
 		background: transparent;
 	}
 	.about__container {
+		min-inline-size: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
@@ -106,7 +110,6 @@ import { skills } from '../data/skills.js';
 		align-items: flex-start;
 		gap: var(--space-20);
 		inline-size: 100%;
-		max-inline-size: 780px;
 		min-inline-size: 0;
 	}
 	p, h2 { margin: 0; }
@@ -131,31 +134,43 @@ import { skills } from '../data/skills.js';
 		line-height: var(--line-height-25);
 	}
 	.about__skills {
+		--about-marquee-gap: var(--space-28);
+		/* A coluna preenche o espaço restante do container; só o track transborda. */
 		inline-size: 100%;
-		block-size: 86px;
+		max-inline-size: 100%;
+		min-inline-size: 0;
+		min-block-size: 86px;
 		overflow: hidden;
 		/* SVG real de 263:826, usado como máscara dos textos HTML. */
 		mask-image: url('/images/about-skills-edge-fade.svg');
 		mask-mode: alpha;
 		mask-repeat: no-repeat;
-		mask-size: 111.5384615385% 88px;
-		mask-position: 1px -2px;
+		mask-size: 111.5384615385% 100%;
+		mask-position: 1px 0;
 	}
 	.about__skills-track {
+		position: relative;
+		inset-inline-start: -90px;
 		display: flex;
-		align-items: center;
-		gap: var(--space-28);
 		inline-size: max-content;
-		block-size: 86px;
+		animation: about-skills-marquee 36s linear infinite;
+		will-change: transform;
+	}
+	.about__skills-cycle {
+		display: flex;
+		flex: none;
+		align-items: center;
+		gap: var(--about-marquee-gap);
+		inline-size: max-content;
+		min-block-size: 86px;
 		margin: 0;
-		padding: 0;
+		padding: 0 var(--about-marquee-gap) 0 0;
 		list-style: none;
-		transform: translateX(-90px);
 		font-size: var(--font-size-30);
 		font-weight: var(--font-weight-light);
 		line-height: var(--line-height-38);
 	}
-	.about__skills-track li { display: flex; align-items: center; gap: var(--space-28); white-space: nowrap; }
+	.about__skills-track li { display: flex; align-items: center; gap: var(--about-marquee-gap); white-space: nowrap; }
 	.about__skills-track li::after {
 		content: '';
 		flex: none;
@@ -163,6 +178,14 @@ import { skills } from '../data/skills.js';
 		block-size: var(--space-8);
 		border: 1.5px solid var(--color-sand-80);
 		border-radius: 50%;
+	}
+	@keyframes about-skills-marquee {
+		from { transform: translate3d(0, 0, 0); }
+		to { transform: translate3d(-50%, 0, 0); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.about__skills-track { animation: none; will-change: auto; }
+		.about__skills-cycle[aria-hidden="true"] { display: none; }
 	}
 	/* Adaptações provisórias: limites já adotados em global.css. */
 	@media (min-width: 768px) {
