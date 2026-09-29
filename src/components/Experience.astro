@@ -1,279 +1,463 @@
 ---
 import { experiences } from '../data/experience.js';
 
-const activeExperience = experiences[0];
+// SVGs originais do Figma (20 × 20), incorporados para manter esta etapa em dois arquivos.
+const icons = {
+	plus: 'data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB2aWV3Qm94PSIwIDAgMjAgMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJJY29uIC8gVmVjdG9yIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTEwIDRWMTZNNCAxMEgxNiIgc3Ryb2tlPSIjRjJFNERDIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==',
+	previous: 'data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB2aWV3Qm94PSIwIDAgMjAgMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJJY29uIC8gVmVjdG9yIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTEwIDE2VjRNMTYgMTBMMTAgNEw0IDEwIiBzdHJva2U9IiNGMkU0REMiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K',
+	next: 'data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB2aWV3Qm94PSIwIDAgMjAgMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJJY29uIC8gVmVjdG9yIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTEwIDRWMTZNMTYgMTBMMTAgMTZMNCAxMCIgc3Ryb2tlPSIjRjJFNERDIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==',
+};
 ---
 
-<section id="experiencia" class="experience" aria-labelledby="experience-title">
-	<div class="experience__surface">
-		<header class="experience__header">
-			<p class="experience__eyebrow">03 — EXPERIÊNCIA PROFISSIONAL</p>
-			<h2 id="experience-title">Minha trajetória conecta<br />comunicação visual, web e UX/UI</h2>
-			<p class="experience__description">evoluindo para interfaces, sistemas e experiências digitais.</p>
-		</header>
-
-		<div class="experience__content">
-			<div class="experience__panels" aria-live="polite">
-				{experiences.map((experience, index) => (
-					<article
-						class:list={['experience__panel', { 'is-active': index === 0 }]}
-						data-experience-panel={experience.id}
-						id={`experience-panel-${experience.id}`}
-						aria-hidden={index === 0 ? 'false' : 'true'}
-						tabindex={index === 0 ? 0 : -1}
-					>
-						<div class="experience__panel-heading">
-							<p class="experience__panel-number">{experience.number}</p>
-							<div class="experience__panel-meta">
-								<p class="experience__panel-company">{experience.company}</p>
-								<p class="experience__panel-role">{experience.role}</p>
-							</div>
-						</div>
-						<div class="experience__panel-description">
-							<p>{experience.description}</p>
-						</div>
-						<ul class="experience__panel-skills" aria-label={`${experience.company} habilidades`}>
-							{experience.skills.map((skill) => <li>{skill}</li>)}
-						</ul>
-					</article>
-				))}
+<section id="experiencia" class="experience page-gutters" aria-labelledby="experience-title">
+	<div class="experience__sticky">
+		<div class="experience__layout container">
+			<div class="experience__intro-column">
+				<header class="experience__intro">
+					<p class="experience__eyebrow">03 — EXPERIÊNCIA</p>
+					<h2 id="experience-title">Minha trajetória conecta comunicação visual, web e UX/UI</h2>
+					<p class="experience__subtitle">evoluindo para interfaces, sistemas e experiências digitais.</p>
+				</header>
+				<div class="experience__navigation" role="group" aria-label="Navegação entre experiências">
+					<button class="experience__navigation-button" type="button" aria-label="Experiência anterior" data-experience-previous data-cursor="control" disabled>
+						<img src={icons.previous} alt="" width="20" height="20" />
+					</button>
+					<button class="experience__navigation-button" type="button" aria-label="Próxima experiência" data-experience-next data-cursor="control">
+						<img src={icons.next} alt="" width="20" height="20" />
+					</button>
+				</div>
 			</div>
 
-			<div class="experience__selector" aria-label="Lista de experiências">
-				<div class="experience__selector-viewport">
-					<div class="experience__selector-content">
-						{experiences.map((experience, index) => (
-							<button
-								type="button"
-								class:list={['experience__item', { 'is-active': index === 0 }]}
-								data-experience-button={experience.id}
-								data-cursor="view"
-								aria-selected={index === 0 ? 'true' : 'false'}
-								aria-pressed={index === 0 ? 'true' : 'false'}
-								aria-controls={`experience-panel-${experience.id}`}
-								tabindex={index === 0 ? 0 : -1}
-							>
-								<span class="experience__item-indicator" aria-hidden="true"></span>
-								<span class="experience__item-copy">
-									<span class="experience__item-company">{experience.company}</span>
-									<span class="experience__item-role">{experience.role}</span>
-								</span>
-								<span class="experience__item-period">{experience.period}</span>
-							</button>
-						))}
-					</div>
-				</div>
-				<div class="experience__scrollbar" aria-hidden="true">
-					<span class="experience__scrollbar-track"></span>
-					<span class="experience__scrollbar-thumb"></span>
-				</div>
+			<div class="experience__roulette">
+				<ol class="experience__track" role="list" aria-label="Experiências profissionais">
+					{experiences.map((experience, index) => (
+						<li class:list={['experience__entry', {
+							'is-active': index === 0,
+							'is-near': index === 1,
+							'is-far': index > 1,
+						}]} data-experience-id={experience.id}>
+							<div class="experience__item">
+								<button
+									class="experience__expand"
+									type="button"
+									aria-label={`Ver detalhes de ${experience.displayTitle ?? experience.role} — ${experience.company}`}
+									aria-controls={`experience-details-${experience.id}`}
+									aria-expanded="false"
+									data-cursor="view"
+								>
+									<img src={icons.plus} alt="" width="20" height="20" />
+								</button>
+								<button class="experience__copy" type="button" aria-pressed={index === 0 ? 'true' : 'false'} data-cursor="view">
+									<span class="experience__item-title">{experience.displayTitle ?? experience.role}</span>
+									<span class="experience__item-meta">{experience.company} · {experience.period}</span>
+								</button>
+							</div>
+							<div class="experience__details-reveal" id={`experience-details-${experience.id}`} aria-hidden="true" inert>
+								<div class="experience__details-inner">
+									<div class="experience__details">
+										<p class="experience__details-description">{experience.description}</p>
+										<ul class="experience__skills" aria-label={`Habilidades — ${experience.company}`}>
+											{experience.skills.map((skill) => <li>{skill}</li>)}
+										</ul>
+									</div>
+								</div>
+							</div>
+						</li>
+					))}
+				</ol>
 			</div>
 		</div>
 	</div>
 </section>
 
 <script>
-	const buttons = [...document.querySelectorAll('[data-experience-button]')];
-	const panels = [...document.querySelectorAll('[data-experience-panel]')];
-	const viewport = document.querySelector('.experience__selector-viewport');
-	const selectorContent = document.querySelector('.experience__selector-content');
-	const thumb = document.querySelector('.experience__scrollbar-thumb');
+	const section = document.querySelector<HTMLElement>('#experiencia');
+	if (section) {
+		const sticky = section.querySelector<HTMLElement>('.experience__sticky')!;
+		const viewport = section.querySelector<HTMLElement>('.experience__roulette')!;
+		const track = section.querySelector<HTMLElement>('.experience__track')!;
+		const entries = [...section.querySelectorAll<HTMLElement>('.experience__entry')];
+		const copies = [...section.querySelectorAll<HTMLButtonElement>('.experience__copy')];
+		const expandButtons = [...section.querySelectorAll<HTMLButtonElement>('.experience__expand')];
+		const details = [...section.querySelectorAll<HTMLElement>('.experience__details-reveal')];
+		const previous = section.querySelector<HTMLButtonElement>('[data-experience-previous]')!;
+		const next = section.querySelector<HTMLButtonElement>('[data-experience-next]')!;
+		let activeIndex = 0;
+		let detailModeOpen = false;
+		let measureFrame = 0;
+		const desktop = window.matchMedia('(min-width: 1280px)');
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let scrollFrame = 0;
+		let geometryFrame = 0;
+		let stickyTop = 0;
+		let scrollStep = 0;
+		let scrollDistance = 0;
+		let programmaticTargetIndex: number | null = null;
 
-	function updateThumbPosition() {
-		if (!viewport || !selectorContent || !thumb) return;
-		const maxScroll = selectorContent.scrollHeight - viewport.clientHeight;
-		if (maxScroll <= 0) {
-			thumb.style.top = '18px';
-			return;
+		function scheduleCenter() {
+			if (measureFrame) return;
+			measureFrame = requestAnimationFrame(() => {
+				measureFrame = 0;
+				const entry = entries[activeIndex];
+				const entryCenter = entry.offsetTop + entry.offsetHeight / 2;
+				track.style.transform = `translateY(${viewport.clientHeight / 2 - entryCenter}px)`;
+			});
 		}
-		const ratio = viewport.scrollTop / maxScroll;
-		const trackHeight = 390;
-		const thumbHeight = 78;
-		const offset = 18 + ratio * Math.max(0, trackHeight - thumbHeight);
-		thumb.style.top = `${offset}px`;
-	}
 
-	function setActiveExperience(button) {
-		const targetId = button.dataset.experienceButton;
+		function render() {
+			entries.forEach((entry, index) => {
+				const distance = Math.abs(index - activeIndex);
+				const open = distance === 0 && detailModeOpen;
+				entry.classList.toggle('is-active', distance === 0);
+				entry.classList.toggle('is-near', distance === 1);
+				entry.classList.toggle('is-far', distance >= 2);
+				entry.classList.toggle('is-open', open);
+				copies[index].setAttribute('aria-pressed', String(distance === 0));
+				expandButtons[index].setAttribute('aria-expanded', String(open));
+				const title = copies[index].textContent?.trim().replace(/\s+/g, ' ');
+				expandButtons[index].setAttribute('aria-label', `${open ? 'Fechar' : 'Ver'} detalhes de ${title}`);
+				details[index].setAttribute('aria-hidden', String(!open));
+				details[index].inert = !open;
+			});
+			previous.disabled = activeIndex === 0;
+			next.disabled = activeIndex === entries.length - 1;
+			scheduleCenter();
+		}
 
-		buttons.forEach((item) => {
-			const active = item === button;
-			item.classList.toggle('is-active', active);
-			item.setAttribute('aria-selected', active ? 'true' : 'false');
-			item.setAttribute('aria-pressed', active ? 'true' : 'false');
-			item.tabIndex = active ? 0 : -1;
+		function select(index: number, syncScroll = false) {
+			const nextIndex = Math.max(0, Math.min(entries.length - 1, index));
+			if (nextIndex !== activeIndex) {
+				activeIndex = nextIndex;
+				render();
+			}
+			if (syncScroll && desktop.matches) scrollToIndex(nextIndex);
+		}
+
+		function targetDocumentScroll(index: number, stageTop: number) {
+			const target = window.scrollY + stageTop - stickyTop + index * scrollStep;
+			const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+			return Math.max(0, Math.min(maxScroll, target));
+		}
+
+		function scrollToIndex(index: number) {
+			programmaticTargetIndex = index;
+			window.scrollTo({
+				top: targetDocumentScroll(index, section!.getBoundingClientRect().top),
+				behavior: reducedMotion.matches ? 'auto' : 'smooth',
+			});
+			// Também libera o alvo quando o scroll já está na posição solicitada.
+			scheduleScroll();
+		}
+
+		function scheduleScroll() {
+			if (!desktop.matches || scrollFrame || scrollStep <= 0) return;
+			scrollFrame = requestAnimationFrame(() => {
+				scrollFrame = 0;
+				if (!desktop.matches) return;
+				const stageTop = section!.getBoundingClientRect().top;
+				if (programmaticTargetIndex !== null) {
+					const target = targetDocumentScroll(programmaticTargetIndex, stageTop);
+					if (Math.abs(window.scrollY - target) > 2) return;
+					programmaticTargetIndex = null;
+				}
+				const offset = Math.max(0, Math.min(scrollDistance, stickyTop - stageTop));
+				select(Math.round(offset / scrollStep));
+			});
+		}
+
+		function interruptProgrammaticScroll() {
+			if (programmaticTargetIndex === null) return;
+			programmaticTargetIndex = null;
+			// Cancela somente nossa navegação suave, sem bloquear o gesto nativo.
+			window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+			scheduleScroll();
+		}
+
+		function scheduleGeometry() {
+			if (geometryFrame) return;
+			geometryFrame = requestAnimationFrame(() => {
+				geometryFrame = 0;
+				const styles = getComputedStyle(section!);
+				stickyTop = parseFloat(styles.getPropertyValue('--nav-height')) || 0;
+				scrollStep = Math.max(1, parseFloat(styles.getPropertyValue('--experience-scroll-step')) || 1);
+				scrollDistance = Math.max(0, entries.length - 1) * scrollStep;
+				const stickyHeight = sticky.offsetHeight;
+				interruptProgrammaticScroll();
+				section!.style.setProperty('--experience-sticky-height', `${stickyHeight}px`);
+				section!.style.setProperty('--experience-scroll-distance', `${scrollDistance}px`);
+				section!.toggleAttribute('data-scroll-driven', desktop.matches);
+				scheduleCenter();
+				scheduleScroll();
+			});
+		}
+
+		previous.addEventListener('click', () => select(activeIndex - 1, true));
+		next.addEventListener('click', () => select(activeIndex + 1, true));
+		copies.forEach((copy, index) => copy.addEventListener('click', () => select(index, true)));
+		expandButtons.forEach((button, index) => button.addEventListener('click', () => {
+			if (index === activeIndex) {
+				detailModeOpen = !detailModeOpen;
+				render();
+			} else {
+				detailModeOpen = true;
+				select(index, true);
+			}
+		}));
+
+		window.addEventListener('scroll', scheduleScroll, { passive: true });
+		window.addEventListener('resize', scheduleGeometry);
+		window.addEventListener('load', scheduleGeometry, { once: true });
+		window.addEventListener('pageshow', scheduleGeometry);
+		desktop.addEventListener('change', scheduleGeometry);
+		reducedMotion.addEventListener('change', () => {
+			if (programmaticTargetIndex !== null) scrollToIndex(programmaticTargetIndex);
+		});
+		window.addEventListener('wheel', interruptProgrammaticScroll, { passive: true });
+		window.addEventListener('touchstart', interruptProgrammaticScroll, { passive: true });
+		window.addEventListener('pointerdown', (event) => {
+			if (event.target instanceof Element && event.target.closest('#experiencia button')) return;
+			interruptProgrammaticScroll();
+		}, { passive: true });
+		window.addEventListener('keydown', (event) => {
+			if (!['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) return;
+			if (event.target instanceof Element) {
+				if (event.target.closest('input, textarea, select, [contenteditable]')) return;
+				if (event.key === ' ' && event.target.closest('button')) return;
+			}
+			interruptProgrammaticScroll();
+		});
+		// Posição real é a verificação principal; scrollend também cobre paradas antecipadas.
+		document.addEventListener('scrollend', (event) => {
+			if (event.target !== document) return;
+			programmaticTargetIndex = null;
+			scheduleScroll();
 		});
 
-		panels.forEach((panel) => {
-			const active = panel.dataset.experiencePanel === targetId;
-			panel.classList.toggle('is-active', active);
-			panel.setAttribute('aria-hidden', active ? 'false' : 'true');
-			panel.tabIndex = active ? 0 : -1;
-		});
-
-		if (viewport) {
-			const targetScrollTop = Math.max(0, button.offsetTop - 20);
-			viewport.scrollTop = targetScrollTop;
-			updateThumbPosition();
-		}
-	}
-
-	buttons.forEach((button) => {
-		button.addEventListener('click', () => setActiveExperience(button));
-	});
-
-	if (viewport) {
-		viewport.addEventListener('scroll', updateThumbPosition);
-		updateThumbPosition();
+		// A altura natural muda durante o reveal e nas quebras de texto.
+		const resizeObserver = new ResizeObserver(scheduleCenter);
+		resizeObserver.observe(viewport);
+		entries.forEach((entry) => resizeObserver.observe(entry));
+		const stickyResizeObserver = new ResizeObserver(scheduleGeometry);
+		stickyResizeObserver.observe(sticky);
+		document.fonts.ready.then(scheduleGeometry);
+		render();
+		scheduleGeometry();
 	}
 </script>
 
 <style>
 	.experience {
-		padding-block: var(--section-padding-y);
-		padding-inline: 40px;
+		--experience-scroll-step: 320px;
+		--experience-visual-height: 720px;
+		--experience-viewport-height: 560px;
+		--experience-active-height: 74px;
+		--experience-control-border: rgba(242, 228, 220, 0.18);
+		--experience-details-duration: 440ms;
+		--experience-details-ease: cubic-bezier(.2, .8, .2, 1);
 		background: transparent;
 		color: var(--color-text-primary);
-		box-sizing: border-box;
+		letter-spacing: 0;
 	}
-
-	.experience__surface {
+	.experience__layout {
+		display: grid;
+		inline-size: 100%;
+		box-sizing: border-box;
+		grid-template-columns: 430px minmax(0, 1fr);
+		align-items: center;
+		gap: var(--space-80);
+		min-inline-size: 0;
+		min-block-size: var(--experience-visual-height);
+		padding-block: var(--space-80);
+	}
+	.experience__intro-column {
 		display: flex;
+		inline-size: 100%;
 		flex-direction: column;
-		gap: var(--space-32);
-		border-radius: var(--radius-32);
-		overflow: hidden;
-		padding: var(--space-80);
-		background: #0D0305;
-		box-sizing: border-box;
-		width: 100%;
-		max-width: 1360px;
-		margin-inline: auto;
+		gap: var(--space-28);
+		min-inline-size: 0;
 	}
-
-	.experience__header {
+	.experience__intro {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-20);
-		width: 100%;
 	}
-
-	.experience__eyebrow {
+	.experience__eyebrow,
+	.experience__intro h2,
+	.experience__subtitle,
+	.experience__item-title,
+	.experience__item-meta {
 		margin: 0;
+	}
+	.experience__eyebrow {
 		font-size: var(--font-size-14);
 		font-weight: var(--font-weight-bold);
-		line-height: var(--line-height-18);
-		color: var(--color-text-primary);
+		line-height: var(--line-height-20);
 	}
-
-	.experience__header h2 {
-		margin: 0;
-		max-width: 980px;
-		font-size: var(--font-size-section-display);
-		line-height: 0.96;
+	.experience__intro h2 {
+		font-size: var(--font-size-40);
 		font-weight: var(--font-weight-extra-bold);
-		color: var(--color-text-primary);
+		line-height: var(--line-height-48, 48px);
+		overflow-wrap: break-word;
 	}
-
-	.experience__description {
-		margin: 0;
-		max-width: 620px;
+	.experience__subtitle {
+		max-inline-size: 410px;
 		font-size: var(--font-size-17);
 		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-20);
-		color: var(--color-text-primary);
+		line-height: var(--line-height-25);
+		opacity: 0.72;
 	}
-
-	.experience__content {
+	.experience__navigation {
 		display: flex;
-		align-items: flex-start;
-		gap: 56px;
-		width: 100%;
+		gap: var(--space-12);
 	}
-
-	.experience__panels {
-		position: relative;
-		inline-size: 500px;
-		height: 520px;
+	.experience__navigation-button,
+	.experience__expand {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex: none;
-		background: var(--color-bg-section);
-		border-radius: var(--radius-32);
+		padding: 0;
+		border: var(--border-width-1) solid var(--experience-control-border);
+		border-radius: var(--radius-full);
+		background: transparent;
+		color: inherit;
+	}
+	.experience__navigation-button {
+		inline-size: 44px;
+		block-size: 44px;
+	}
+	.experience__navigation-button:disabled { opacity: 0.3; }
+	.experience__navigation-button:focus-visible,
+	.experience__copy:focus-visible,
+	.experience__expand:focus-visible {
+		outline: var(--border-width-2) solid var(--color-text-primary);
+		outline-offset: var(--space-4);
+	}
+	.experience__roulette {
+		min-inline-size: 0;
+		inline-size: 100%;
+		block-size: var(--experience-viewport-height);
 		overflow: hidden;
+		background: transparent;
+		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+		mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
 	}
-
-	.experience__panel {
-		position: absolute;
-		inset: 0;
-		padding: 42px 40px 57px;
+	.experience__track {
+		position: relative;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		gap: var(--space-28);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		/* Posição inicial antes da primeira medição do DOM. */
+		transform: translateY(calc((var(--experience-viewport-height) - var(--experience-active-height)) / 2));
+		transition: transform 510ms cubic-bezier(.22, .8, .2, 1);
+	}
+	.experience__entry {
+		--experience-item-scale: 1;
+		--experience-item-opacity: 1;
+		--experience-item-font-size: var(--font-size-40);
+		--experience-item-line-height: 48px;
+		position: relative;
+		min-inline-size: 0;
+	}
+	.experience__entry.is-near {
+		--experience-item-scale: 0.96;
+		--experience-item-opacity: 0.52;
+		--experience-item-font-size: var(--font-size-30);
+		--experience-item-line-height: var(--line-height-38);
+	}
+	.experience__entry.is-far {
+		--experience-item-scale: 0.91;
+		--experience-item-opacity: 0.23;
+		--experience-item-font-size: var(--font-size-22);
+		--experience-item-line-height: var(--line-height-28);
+	}
+	.experience__item {
+		display: flex;
+		inline-size: 100%;
+		align-items: center;
+		gap: var(--space-16);
+		min-inline-size: 0;
+		transform: scale(var(--experience-item-scale));
+		transform-origin: left center;
+		opacity: var(--experience-item-opacity);
+		transition: transform 510ms cubic-bezier(.22, .8, .2, 1), opacity 440ms var(--experience-details-ease);
+	}
+	.experience__expand {
+		inline-size: 36px;
+		block-size: 36px;
+	}
+	.experience__expand img { transition: transform 280ms var(--experience-details-ease); }
+	.is-open .experience__expand img { transform: rotate(45deg); }
+	.experience__copy {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--space-8);
+		min-inline-size: 0;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font-family: inherit;
+		text-align: left;
+	}
+	.experience__item-title {
+		font-size: var(--experience-item-font-size);
+		font-weight: var(--font-weight-light);
+		line-height: var(--experience-item-line-height);
+		overflow-wrap: anywhere;
+		transition: font-size 440ms var(--experience-details-ease), line-height 440ms var(--experience-details-ease);
+	}
+	.experience__item-meta {
+		font-size: var(--font-size-13);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-18);
+		opacity: 0.48;
+		overflow-wrap: anywhere;
+	}
+	.experience__details-reveal {
+		display: grid;
+		grid-template-rows: 0fr;
+		inline-size: 100%;
 		opacity: 0;
-		pointer-events: none;
-		transform: translateY(8px);
-		transition: opacity var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
+		visibility: hidden;
+		transform: translateY(-8px) scale(.985);
+		transform-origin: top left;
+		transition: grid-template-rows var(--experience-details-duration) var(--experience-details-ease),
+			opacity var(--experience-details-duration) var(--experience-details-ease),
+			transform var(--experience-details-duration) var(--experience-details-ease),
+			visibility 0s var(--experience-details-duration);
 	}
-
-	.experience__panel.is-active {
+	.is-open .experience__details-reveal {
+		grid-template-rows: 1fr;
 		opacity: 1;
-		pointer-events: auto;
-		transform: translateY(0);
+		visibility: visible;
+		transform: translateY(0) scale(1);
+		transition-delay: 0s;
 	}
-
-	.experience__panel-heading {
+	.experience__details-inner { min-block-size: 0; overflow: hidden; }
+	.experience__details {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		width: 420px;
-		color: var(--color-text-primary);
+		gap: var(--space-20);
+		inline-size: 100%;
+		margin-block-start: 18px;
+		padding: var(--space-24);
+		border: var(--border-width-1) solid rgba(242, 228, 220, .14);
+		border-radius: var(--radius-28);
+		background: rgba(13, 3, 5, .28);
 	}
-
-	.experience__panel-number {
+	.experience__details-description {
 		margin: 0;
-		font-size: 78px;
-		font-weight: var(--font-weight-extra-bold);
-		line-height: 1;
-		color: var(--color-text-primary);
-	}
-
-	.experience__panel-meta {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		width: 420px;
-	}
-
-	.experience__panel-company {
-		margin: 0;
-		font-size: var(--font-size-22);
-		font-weight: var(--font-weight-bold);
+		font-size: var(--font-size-14);
+		font-weight: var(--font-weight-regular);
 		line-height: var(--line-height-22);
-		color: var(--color-text-primary);
+		opacity: .72;
 	}
-
-	.experience__panel-role {
-		margin: 0;
-		font-size: var(--font-size-15);
-		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-20);
-		color: var(--color-text-primary);
-	}
-
-	.experience__panel-description {
-		flex: 1 1 auto;
-		width: 420px;
-		padding-top: 45px;
-	}
-
-	.experience__panel-description p {
-		margin: 0;
-		font-size: var(--font-size-16);
-		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-24);
-		color: var(--color-text-primary);
-	}
-
-	.experience__panel-skills {
+	.experience__skills {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-8);
@@ -281,227 +465,45 @@ const activeExperience = experiences[0];
 		padding: 0;
 		list-style: none;
 	}
-
-	.experience__panel-skills li {
-		padding: var(--space-8) var(--space-12);
-		border-radius: var(--radius-10);
-		background: var(--color-tag-bg);
-		color: var(--color-tag-text);
+	.experience__skills li {
+		padding: 7px 10px;
+		border: var(--border-width-1) solid rgba(242, 228, 220, .16);
+		border-radius: var(--radius-full);
+		background: rgba(242, 228, 220, .03);
 		font-size: var(--font-size-11);
 		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-14);
-		white-space: nowrap;
+		line-height: var(--line-height-16);
+		opacity: .82;
 	}
-
-	.experience__selector {
-		display: flex;
-		align-items: center;
-		gap: var(--space-16);
-		flex: 1 1 auto;
-		height: 520px;
-		min-inline-size: 0;
-	}
-
-	.experience__selector-viewport {
-		position: relative;
-		flex: 1 1 auto;
-		height: 100%;
-		overflow-y: auto;
-		scrollbar-width: none;
-	}
-
-	.experience__selector-viewport::-webkit-scrollbar {
-		display: none;
-	}
-
-	.experience__selector-content {
-		display: flex;
-		flex-direction: column;
-		min-inline-size: 0;
-		width: 100%;
-	}
-
-	.experience__item {
-		display: flex;
-		align-items: flex-start;
-		gap: var(--space-16);
-		width: 100%;
-		min-height: 108px;
-		padding: var(--space-20) 0;
-		border: 0;
-		border-bottom: 1px solid var(--color-border-subtle);
-		background: transparent;
-		color: var(--color-text-primary);
-		text-align: left;
-		cursor: none;
-		transition: opacity var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
-	}
-
-	.experience__item:focus-visible {
-		outline: var(--border-width-2) solid var(--color-text-primary);
-		outline-offset: -2px;
-	}
-
-	.experience__item-copy {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		flex: 1 1 auto;
-		min-inline-size: 0;
-	}
-
-	.experience__item-company {
-		display: block;
-		font-size: 30px;
-		font-weight: var(--font-weight-light);
-		line-height: var(--line-height-38);
-		opacity: 0.72;
-		color: var(--color-text-primary);
-	}
-
-	.experience__item-role {
-		display: block;
-		font-size: var(--font-size-13);
-		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-18);
-		opacity: 0.64;
-		color: var(--color-text-primary);
-	}
-
-	.experience__item-period {
-		display: block;
-		margin-inline-start: auto;
-		padding-top: 8px;
-		font-size: var(--font-size-12);
-		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-14);
-		white-space: nowrap;
-		opacity: 0.64;
-		color: var(--color-text-primary);
-	}
-
-	.experience__item-indicator {
-		display: block;
-		inline-size: 8px;
-		height: 68px;
-		border-radius: 999px;
-		background: transparent;
-		opacity: 0.12;
-		transform: scaleY(0.85);
-		transition: opacity var(--motion-duration-base) var(--motion-ease-out), background var(--motion-duration-base) var(--motion-ease-out), transform var(--motion-duration-base) var(--motion-ease-out);
-	}
-
-	.experience__item.is-active {
-		background: transparent;
-	}
-
-	.experience__item.is-active .experience__item-company,
-	.experience__item.is-active .experience__item-role,
-	.experience__item.is-active .experience__item-period {
-		opacity: 1;
-	}
-
-	.experience__item.is-active .experience__item-indicator {
-		background: var(--color-sand-light);
-		opacity: 1;
-		transform: scaleY(1);
-	}
-
-	.experience__scrollbar {
-		position: relative;
-		inline-size: 8px;
-		height: 426px;
-	}
-
-	.experience__scrollbar-track {
-		display: block;
-		position: absolute;
-		left: 3px;
-		top: 18px;
-		inline-size: 2px;
-		height: 390px;
-		background: var(--color-border-strong);
-		opacity: 0.18;
-		border-radius: 999px;
-	}
-
-	.experience__scrollbar-thumb {
-		display: block;
-		position: absolute;
-		left: 1px;
-		top: 18px;
-		inline-size: 6px;
-		height: 78px;
-		background: var(--color-text-primary);
-		opacity: 0.8;
-		border-radius: 3px;
-		transition: top var(--motion-duration-base) var(--motion-ease-out);
-	}
-
-	@media (max-width: 1279px) {
-		.experience {
-			padding-inline: 40px;
-		}
-		.experience__surface {
-			padding: 64px 40px;
-		}
-		.experience__content {
-			gap: 32px;
-		}
-	}
-
-	@media (max-width: 767px) {
-		.experience {
-			padding-block: var(--section-padding-y-mobile);
-			padding-inline: var(--layout-gutter-mobile);
-		}
-		.experience__surface {
-			padding: 40px 24px;
-			gap: 24px;
-		}
-		.experience__header h2 {
-			font-size: var(--font-size-heading-large);
-		}
-		.experience__content {
-			flex-direction: column;
-			gap: 24px;
-		}
-		.experience__panels {
-			inline-size: 100%;
-			height: 460px;
-		}
-		.experience__panel {
-			padding: 28px 24px 32px;
-		}
-		.experience__panel-heading,
-		.experience__panel-meta,
-		.experience__panel-description,
-		.experience__panel {
-			width: 100%;
-		}
-		.experience__panel-number {
-			font-size: 62px;
-		}
-		.experience__selector {
-			height: auto;
-			width: 100%;
-			flex-direction: column;
-		}
-		.experience__selector-viewport {
-			height: 360px;
-			width: 100%;
-		}
-		.experience__scrollbar {
-			display: none;
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.experience__panel,
+		.experience__track,
 		.experience__item,
-		.experience__item-indicator,
-		.experience__scrollbar-thumb {
-			transition: none;
+		.experience__item-title,
+		.experience__expand img,
+		.experience__details-reveal { transition: none; }
+	}
+	@media (hover: hover) and (pointer: fine) {
+		:global(html.cursor-enabled) :is(.experience__navigation-button, .experience__expand, .experience__copy),
+		:global(html.cursor-enabled) :is(.experience__navigation-button, .experience__expand, .experience__copy) * {
+			cursor: none;
 		}
+	}
+	@media (min-width: 1280px) {
+		.experience[data-scroll-driven] {
+			min-block-size: calc(var(--experience-sticky-height, var(--experience-visual-height)) + var(--experience-scroll-distance, 0px));
+		}
+		.experience[data-scroll-driven] .experience__sticky {
+			position: sticky;
+			top: var(--nav-height);
+		}
+	}
+	/* Contenção provisória: layout mobile final será definido em outra etapa. */
+	@media (max-width: 1279px) {
+		.experience__layout {
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--space-32);
+			padding-block: var(--section-padding-y);
+		}
+		.experience__intro-column { max-inline-size: 430px; }
 	}
 </style>

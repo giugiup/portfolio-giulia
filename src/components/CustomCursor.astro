@@ -23,14 +23,17 @@
 		opacity: 1;
 	}
 	.custom-cursor.is-pressed .custom-cursor__label {
-		transform: scale(0.94);
+		transform: translate(14px, 14px) scale(0.96);
 	}
 	.custom-cursor__label {
 		position: relative;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: 6px 14px 6px 18px;
+		box-sizing: border-box;
+		padding-inline: 8px;
+		padding-block: 6px;
+		min-inline-size: 0;
 		border-radius: var(--radius-full);
 		background: var(--color-sand-light);
 		color: var(--color-text-inverse);
@@ -38,13 +41,26 @@
 		font-weight: var(--font-weight-regular);
 		line-height: 1;
 		letter-spacing: 0;
-		transition: transform 140ms ease, opacity 140ms ease;
+		text-align: center;
+		white-space: nowrap;
+		transform: translate(14px, 14px);
+		transition: width 160ms ease-out, transform 200ms cubic-bezier(.2, .8, .2, 1), opacity 200ms cubic-bezier(.2, .8, .2, 1), scale 160ms ease-out;
+	}
+	.custom-cursor__label-text {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		white-space: nowrap;
+		opacity: 1;
+		transform: scale(1);
+		transition: opacity 120ms ease-out, transform 160ms ease-out;
 	}
 	.custom-cursor__pointer {
 		position: absolute;
-		left: -7px;
-		top: 50%;
-		transform: translateY(-50%) rotate(18deg);
+		left: 0;
+		top: 2px;
+		transform: rotate(18deg);
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -57,20 +73,70 @@
 		width: 18px;
 		height: auto;
 	}
+
+	/* Mesma cor do SVG existente, preservando o ponteiro padrão. */
+	.custom-cursor__pointer {
+		border-radius: 0;
+		transition: width 200ms cubic-bezier(.2, .8, .2, 1),
+			height 200ms cubic-bezier(.2, .8, .2, 1),
+			border-radius 200ms cubic-bezier(.2, .8, .2, 1),
+			transform 200ms cubic-bezier(.2, .8, .2, 1);
+	}
+	.custom-cursor__pointer::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: var(--color-sand-light);
+		opacity: 0;
+		transform: scale(.6);
+		transition: opacity 200ms cubic-bezier(.2, .8, .2, 1), transform 200ms cubic-bezier(.2, .8, .2, 1);
+	}
+	.custom-cursor__pointer img {
+		opacity: 1;
+		transform: scale(1);
+		transition: opacity 200ms cubic-bezier(.2, .8, .2, 1), transform 200ms cubic-bezier(.2, .8, .2, 1);
+	}
+	.custom-cursor[data-cursor-state='control'] .custom-cursor__pointer {
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		transform: rotate(0);
+	}
+	.custom-cursor[data-cursor-state='control'] .custom-cursor__pointer img {
+		opacity: 0;
+		transform: scale(.6);
+	}
+	.custom-cursor[data-cursor-state='control'] .custom-cursor__pointer::after {
+		opacity: 1;
+		transform: scale(1);
+	}
+	.custom-cursor[data-cursor-state='control'] .custom-cursor__label {
+		opacity: 0;
+		transform: translate(14px, 14px) scale(.85);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.custom-cursor,
+		.custom-cursor__pointer,
+		.custom-cursor__pointer::after,
+		.custom-cursor__pointer img,
+		.custom-cursor__label,
+		.custom-cursor__label-text { transition: none; }
+	}
 	@media (hover: hover) and (pointer: fine) {
-		html.cursor-enabled,
-		html.cursor-enabled body,
-		html.cursor-enabled a,
-		html.cursor-enabled button,
-		html.cursor-enabled [data-cursor] {
+		:global(html.cursor-enabled),
+		:global(html.cursor-enabled body),
+		:global(html.cursor-enabled a),
+		:global(html.cursor-enabled button),
+		:global(html.cursor-enabled [data-cursor]) {
 			cursor: none;
 		}
-		html.cursor-enabled input,
-		html.cursor-enabled textarea,
-		html.cursor-enabled select,
-		html.cursor-enabled option,
-		html.cursor-enabled [contenteditable='true'],
-		html.cursor-enabled [contenteditable=''] {
+		:global(html.cursor-enabled input),
+		:global(html.cursor-enabled textarea),
+		:global(html.cursor-enabled select),
+		:global(html.cursor-enabled option),
+		:global(html.cursor-enabled [contenteditable='true']),
+		:global(html.cursor-enabled [contenteditable='']) {
 			cursor: auto;
 		}
 	}
@@ -79,70 +145,107 @@
 <script>
 	(() => {
 		const root = document.documentElement;
-		const cursor = document.querySelector('.custom-cursor');
-		const labelText = document.querySelector('.custom-cursor__label-text');
-		if (!cursor || !labelText) return;
+		const cursor = document.querySelector<HTMLElement>('.custom-cursor');
+		const label = cursor?.querySelector<HTMLElement>('.custom-cursor__label');
+		const labelText = cursor?.querySelector<HTMLElement>('.custom-cursor__label-text');
+		if (!cursor || !label || !labelText) return;
 
 		const pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
 		const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-		if (!pointerQuery.matches || reducedMotionQuery.matches) {
-			root.classList.remove('cursor-enabled');
-			return;
-		}
-
-		const labels = {
+		const labels: Record<string, string> = {
 			default: 'Você',
 			open: 'Abrir',
 			project: 'Ver projeto',
 			contact: 'Contato',
+			view: 'Ver',
 		};
-
 		let pointerX = window.innerWidth / 2;
 		let pointerY = window.innerHeight / 2;
 		let currentX = pointerX;
 		let currentY = pointerY;
+		let enabled = false;
+		let animationFrame = 0;
+		let hoveredTarget: Element | null = null;
+		let currentState = '';
 
-		const setLabel = (key) => {
-			const nextLabel = labels[key] || labels.default;
-			labelText.textContent = nextLabel;
+		const setLabel = (key: string) => {
+			const previousWidth = label.offsetWidth || 0;
+			labelText.textContent = labels[key] || labels.default;
+			labelText.style.opacity = '0';
+			labelText.style.transform = 'scale(0.96)';
+			requestAnimationFrame(() => {
+				label.style.width = `${Math.max(26, labelText.offsetWidth + 16)}px`;
+				labelText.style.opacity = '1';
+				labelText.style.transform = 'scale(1)';
+			});
+			label.style.width = `${previousWidth || Math.max(26, labelText.offsetWidth + 16)}px`;
+		};
+
+		const updateState = (target: EventTarget | null) => {
+			hoveredTarget = target instanceof Element ? target.closest('[data-cursor]') : null;
+			const disabled = hoveredTarget?.matches(':disabled, [aria-disabled="true"]');
+			const key = !disabled && hoveredTarget ? hoveredTarget.getAttribute('data-cursor') || 'default' : 'default';
+			if (key === currentState) return;
+			currentState = key;
+			cursor.dataset.cursorState = key;
+			if (key !== 'control') setLabel(key);
 		};
 
 		const animate = () => {
+			if (!enabled) return;
 			currentX += (pointerX - currentX) * 0.32;
 			currentY += (pointerY - currentY) * 0.32;
 			cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-			requestAnimationFrame(animate);
+			animationFrame = requestAnimationFrame(animate);
 		};
-
-		const showCursor = () => cursor.classList.add('is-visible');
+		const showCursor = () => { if (enabled) cursor.classList.add('is-visible'); };
 		const hideCursor = () => cursor.classList.remove('is-visible');
 
-		root.classList.add('cursor-enabled');
-		setLabel('default');
-		showCursor();
-		requestAnimationFrame(animate);
+		const updateEnabled = () => {
+			// Mantém a política existente: cursor nativo em touch ou reduced motion.
+			enabled = pointerQuery.matches && !reducedMotionQuery.matches;
+			root.classList.toggle('cursor-enabled', enabled);
+			cancelAnimationFrame(animationFrame);
+			if (enabled) {
+				updateState(hoveredTarget);
+				showCursor();
+				animationFrame = requestAnimationFrame(animate);
+			} else {
+				hideCursor();
+				cursor.classList.remove('is-pressed');
+			}
+		};
 
+		// Delegação pelo data-cursor, inclusive para ícones/spans e controles disabled.
 		document.addEventListener('pointermove', (event) => {
+			if (!enabled) return;
 			pointerX = event.clientX;
 			pointerY = event.clientY;
+			updateState(event.target);
 			showCursor();
 		}, { passive: true });
-
+		document.addEventListener('pointerover', (event) => {
+			if (enabled) updateState(event.target);
+		}, { passive: true });
+		document.addEventListener('pointerout', (event) => {
+			if (enabled) updateState(event.relatedTarget);
+		}, { passive: true });
 		document.addEventListener('pointerleave', hideCursor);
-		window.addEventListener('pointerdown', () => cursor.classList.add('is-pressed'));
+		window.addEventListener('pointerdown', () => { if (enabled) cursor.classList.add('is-pressed'); });
 		window.addEventListener('pointerup', () => cursor.classList.remove('is-pressed'));
 		window.addEventListener('blur', hideCursor);
 		window.addEventListener('focus', showCursor);
+		window.addEventListener('mouseleave', () => { updateState(null); hideCursor(); });
+		pointerQuery.addEventListener('change', updateEnabled);
+		reducedMotionQuery.addEventListener('change', updateEnabled);
 
-		document.querySelectorAll('[data-cursor]').forEach((element) => {
-			element.addEventListener('mouseenter', () => {
-				const key = element.getAttribute('data-cursor') || 'default';
-				setLabel(key);
-			});
-
-			element.addEventListener('mouseleave', () => {
-				setLabel('default');
-			});
+		// A Experience pode desabilitar a seta sob um ponteiro parado ao trocar de índice.
+		const controlObserver = new MutationObserver(() => {
+			if (enabled && hoveredTarget) updateState(hoveredTarget);
 		});
+		document.querySelectorAll('[data-cursor="control"]').forEach((control) => {
+			controlObserver.observe(control, { attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'data-cursor'] });
+		});
+		updateEnabled();
 	})();
 </script>
