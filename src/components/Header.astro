@@ -1,7 +1,7 @@
 ---
 import Button from './Button.astro';
 
-const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
+const { logoSrc, arrowIconSrc } = Astro.props;
 const navigation = [
 	{ text: 'Projetos', href: '#projetos' },
 	{ text: 'Sobre mim', href: '#sobre' },
@@ -27,7 +27,7 @@ const navigation = [
 				<span class="availability__dot" aria-hidden="true"></span>
 				Disponível para novos projetos
 			</span>
-			<Button text="Contato" href={contactHref} variant="header" iconSrc={arrowIconSrc} disabled={!contactHref} />
+			<Button text="Contato" href="#contato" variant="header" iconSrc={arrowIconSrc} />
 		</div>
 	</div>
 </header>

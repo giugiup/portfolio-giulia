@@ -1,0 +1,159 @@
+---
+interface Props {
+  id: string;
+  type: string;
+  course: string;
+  institution: string;
+  year: string;
+  featured?: boolean;
+  position: { left: number; top: number; rotation: number };
+}
+const { id, type, course, institution, year, featured = false, position } = Astro.props;
+---
+
+<li class:list={['certificate-position', { 'is-featured': featured }]}
+  data-certificate-draggable
+  data-cursor="move"
+  style={`--certificate-left: ${position.left}px; --certificate-top: ${position.top}px; --certificate-rotation: ${position.rotation}deg;`}>
+  <div class="certificate-motion">
+    <div class="certificate-idle">
+    <article class="certificate-card" aria-labelledby={`certificate-${id}`}>
+      <span class="certificate-tag">{type}</span>
+      <h3 id={`certificate-${id}`}>{course}</h3>
+      <div class="certificate-meta">
+        <span class="certificate-institution">{institution}</span>
+        <span class="certificate-year">{year}</span>
+      </div>
+    </article>
+    </div>
+  </div>
+</li>
+
+<style>
+  .certificate-position {
+    position: absolute;
+    left: var(--certificate-left);
+    top: var(--certificate-top);
+    width: 238px;
+    transform: translate3d(var(--drag-x, 0px), var(--drag-y, 0px), 0);
+  }
+  .certificate-motion {
+    transform: rotate(var(--certificate-rotation));
+    transition: transform 200ms cubic-bezier(.2,.8,.2,1);
+  }
+  .certificate-position.is-featured { width: 286px; }
+  /* Variações visuais por card, sem alterar os dados ou o translate do drag. */
+  .certificate-position:nth-child(1) { --idle-x: .7px; --idle-y: 1.4px; --idle-rotate: .11deg; --idle-duration: 9.5s; --idle-delay: -3.2s; }
+  .certificate-position:nth-child(2) { --idle-x: -.8px; --idle-y: 1.2px; --idle-rotate: -.13deg; --idle-duration: 10.2s; --idle-delay: -8.1s; }
+  .certificate-position:nth-child(3) { --idle-x: .6px; --idle-y: -1.5px; --idle-rotate: -.12deg; --idle-duration: 10.9s; --idle-delay: -1.7s; }
+  .certificate-position:nth-child(4) { --idle-x: -.75px; --idle-y: -1.3px; --idle-rotate: .14deg; --idle-duration: 11.4s; --idle-delay: -10.4s; }
+  .certificate-position:nth-child(5) { --idle-x: .55px; --idle-y: 1.35px; --idle-rotate: -.12deg; --idle-duration: 12s; --idle-delay: -5.6s; }
+  .certificate-position:nth-child(6) { --idle-x: -.65px; --idle-y: 1.1px; --idle-rotate: .10deg; --idle-duration: 9.8s; --idle-delay: -14.3s; }
+  .certificate-position:nth-child(7) { --idle-x: .8px; --idle-y: -1.45px; --idle-rotate: .15deg; --idle-duration: 10.6s; --idle-delay: -7.9s; }
+  .certificate-position:nth-child(8) { --idle-x: -.6px; --idle-y: -1.25px; --idle-rotate: -.11deg; --idle-duration: 11.7s; --idle-delay: -18.2s; }
+  @keyframes certificate-idle {
+    0% {
+      transform: translate3d(calc(var(--idle-x) * -1), calc(var(--idle-y) * -.6), 0) rotate(calc(var(--idle-rotate) * -1));
+    }
+    35% {
+      transform: translate3d(calc(var(--idle-x) * .4), calc(var(--idle-y) * -1), 0) rotate(calc(var(--idle-rotate) * .3));
+    }
+    70% {
+      transform: translate3d(var(--idle-x), calc(var(--idle-y) * .5), 0) rotate(var(--idle-rotate));
+    }
+    100% {
+      transform: translate3d(calc(var(--idle-x) * -.3), var(--idle-y), 0) rotate(calc(var(--idle-rotate) * -.4));
+    }
+  }
+  .certificate-card {
+    transition: transform 200ms cubic-bezier(.2,.8,.2,1),
+      background 200ms cubic-bezier(.2,.8,.2,1),
+      border-color 200ms cubic-bezier(.2,.8,.2,1),
+      box-shadow 200ms cubic-bezier(.2,.8,.2,1);
+    height: 172px;
+    padding: var(--space-20);
+    border-radius: var(--certificate-radius);
+    border: 1px solid var(--certificate-border);
+    background: var(--certificate-background);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--certificate-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-12);
+  }
+  .is-featured .certificate-card {
+    height: 178px;
+    border-color: var(--certificate-featured-border);
+    background: var(--certificate-featured-background);
+    box-shadow: var(--certificate-featured-shadow);
+  }
+  .certificate-tag {
+    align-self: flex-start;
+    padding: 5px var(--space-8);
+    border: 1px solid var(--certificate-border);
+    border-radius: var(--radius-full);
+    color: var(--certificate-tag-text);
+    font-size: var(--font-size-10);
+    line-height: var(--line-height-16);
+  }
+  .is-featured .certificate-tag {
+    background: var(--certificate-background);
+    border-color: var(--certificate-featured-border);
+    color: var(--certificate-featured-tag-text);
+  }
+  h3 {
+    margin: 0;
+    font-size: var(--font-size-20);
+    line-height: var(--line-height-24);
+    font-weight: var(--font-weight-semibold);
+  }
+  .is-featured h3 { font-size: var(--font-size-25); line-height: var(--line-height-30); }
+  .certificate-meta {
+    display: flex;
+    gap: var(--space-12);
+    border-top: 1px solid var(--formation-border);
+    padding-top: var(--space-12);
+    font-size: var(--font-size-11);
+    line-height: var(--line-height-16);
+  }
+  .certificate-meta span { opacity: .60; }
+  .is-featured .certificate-meta span { opacity: .70; }
+  .certificate-institution { flex: 1; }
+  .certificate-year { white-space: nowrap; }
+  .is-dragging .certificate-motion { transform: rotate(0deg); }
+  .is-dragging .certificate-card {
+    transform: scale(1.03);
+    background: rgba(242,228,220,.10);
+    border-color: rgba(242,228,220,.40);
+    box-shadow: 0 28px 37px rgba(0,0,0,.30);
+  }
+  @media (min-width: 1440px) and (pointer: fine) {
+    .certificate-idle {
+      animation: certificate-idle var(--idle-duration) ease-in-out var(--idle-delay) infinite alternate;
+    }
+    .certificate-position.is-dragging .certificate-idle {
+      animation: none;
+      transform: none;
+    }
+    .certificate-position {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  }
+  @media (max-width: 1439px) {
+    .certificate-position, .certificate-position.is-featured {
+      position: static;
+      width: 100%;
+      min-width: 0;
+    }
+    .certificate-motion { transform: none; }
+    .certificate-card, .is-featured .certificate-card { height: auto; min-height: 178px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .certificate-idle { animation: none; transform: none; }
+    .certificate-motion, .certificate-card { transition: none; }
+  }
+</style>

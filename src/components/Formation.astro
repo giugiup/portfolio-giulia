@@ -1,0 +1,188 @@
+---
+import CertificateCard from './CertificateCard.astro';
+import { certificates } from '../data/education.js';
+---
+
+<section id="formacao" class="formation" aria-labelledby="formation-title">
+  <div class="certificates-surface">
+    <div class="formation-intro">
+      <p class="formation-eyebrow">04 — FORMAÇÃO CONTÍNUA</p>
+      <h2 id="formation-title">Aprender faz parte<br />do meu processo.</h2>
+      <p class="formation-subtitle">Cursos e formações que aprofundam minha atuação em interface, experiência, produto e construção de marcas.</p>
+    </div>
+    <ul class="certificates-list" aria-label="Cursos e formações">
+      {certificates.map((certificate) => <CertificateCard {...certificate} />)}
+    </ul>
+    <p class="formation-hint">• Pegue, arraste e solte os cards.</p>
+  </div>
+</section>
+
+<script>
+  const dragEnabled = window.matchMedia('(min-width: 1440px) and (pointer: fine)');
+  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+  document.querySelectorAll<HTMLElement>('.certificates-surface').forEach((surface) => {
+    let highestZ = 0;
+
+    surface.querySelectorAll<HTMLElement>('[data-certificate-draggable]').forEach((element) => {
+      if (element.dataset.dragInitialized) return;
+      element.dataset.dragInitialized = 'true';
+
+      const card = element.querySelector<HTMLElement>('.certificate-card')!;
+      let currentX = 0;
+      let currentY = 0;
+      let startX = 0;
+      let startY = 0;
+      let pointerStartX = 0;
+      let pointerStartY = 0;
+      let activePointerId: number | null = null;
+      let minX = 0;
+      let maxX = 0;
+      let minY = 0;
+      let maxY = 0;
+
+      const measureBounds = () => {
+        const baseLeft = element.offsetLeft;
+        const baseTop = element.offsetTop;
+        const cardWidth = card.offsetWidth;
+        const cardHeight = card.offsetHeight;
+        const angle = Math.abs(parseFloat(getComputedStyle(element).getPropertyValue('--certificate-rotation'))) * Math.PI / 180;
+        // Reserve the envelope throughout rotation/scale transitions, including release.
+        const extraX = (1.03 * (cardWidth + cardHeight * Math.sin(angle)) - cardWidth) / 2;
+        const extraY = (1.03 * (cardHeight + cardWidth * Math.sin(angle)) - cardHeight) / 2;
+        // Keep the envelope clear of the surface's rounded corners as well.
+        const corner = parseFloat(getComputedStyle(surface).borderTopLeftRadius) || 0;
+        minX = -baseLeft + extraX + corner;
+        maxX = surface.clientWidth - baseLeft - cardWidth - extraX - corner;
+        minY = -baseTop + extraY + corner;
+        maxY = surface.clientHeight - baseTop - cardHeight - extraY - corner;
+      };
+
+      const renderPosition = () => {
+        element.style.setProperty('--drag-x', `${currentX}px`);
+        element.style.setProperty('--drag-y', `${currentY}px`);
+      };
+
+      const finishDrag = () => {
+        const pointerId = activePointerId;
+        activePointerId = null;
+        element.classList.remove('is-dragging');
+        if (pointerId !== null && element.hasPointerCapture(pointerId)) {
+          element.releasePointerCapture(pointerId);
+        }
+        // currentX/currentY and CSS offsets deliberately survive release/cancel.
+      };
+
+      element.addEventListener('pointerdown', (event) => {
+        if (!dragEnabled.matches || event.pointerType === 'touch' || event.button !== 0 || activePointerId !== null) return;
+        const positionElement = event.currentTarget as HTMLElement;
+        measureBounds();
+        startX = currentX;
+        startY = currentY;
+        pointerStartX = event.clientX;
+        pointerStartY = event.clientY;
+        activePointerId = event.pointerId;
+        positionElement.setPointerCapture(event.pointerId);
+        positionElement.classList.add('is-dragging');
+        highestZ += 1;
+        positionElement.style.zIndex = String(highestZ);
+        event.preventDefault();
+      });
+
+      element.addEventListener('pointermove', (event) => {
+        if (event.pointerId !== activePointerId) return;
+        currentX = clamp(startX + event.clientX - pointerStartX, minX, maxX);
+        currentY = clamp(startY + event.clientY - pointerStartY, minY, maxY);
+        renderPosition();
+      });
+
+      element.addEventListener('pointerup', (event) => {
+        if (event.pointerId !== activePointerId) return;
+        finishDrag();
+      });
+      element.addEventListener('pointercancel', (event) => {
+        if (event.pointerId === activePointerId) finishDrag();
+      });
+      element.addEventListener('lostpointercapture', (event) => {
+        if (event.pointerId === activePointerId) finishDrag();
+      });
+
+      dragEnabled.addEventListener('change', () => {
+        finishDrag();
+        // Preserve desktop offsets in memory without displacing the mobile grid.
+        if (dragEnabled.matches) renderPosition();
+        else {
+          element.style.removeProperty('--drag-x');
+          element.style.removeProperty('--drag-y');
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .formation {
+    padding: var(--space-32) var(--space-80);
+    color: var(--color-text-primary);
+  }
+  .certificates-surface {
+    isolation: isolate;
+    position: relative;
+    width: 100%;
+    max-width: var(--layout-content-max);
+    height: 816px;
+    margin-inline: auto;
+    overflow: hidden;
+    border: 1px solid var(--formation-border);
+    border-radius: var(--radius-32);
+    background: var(--color-dark-20);
+  }
+  .formation-intro {
+    position: absolute;
+    top: var(--space-40);
+    left: var(--space-40);
+    width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20);
+  }
+  .formation-intro p, .formation-intro h2, .formation-hint { margin: 0; }
+  .formation-eyebrow {
+    font-size: var(--font-size-14);
+    line-height: var(--line-height-20);
+    font-weight: var(--font-weight-bold);
+  }
+  .formation-intro h2 {
+    font-size: var(--font-size-40);
+    line-height: var(--line-height-48);
+    font-weight: var(--font-weight-extra-bold);
+  }
+  .formation-subtitle {
+    font-size: var(--font-size-17);
+    line-height: var(--line-height-25);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-text-secondary);
+  }
+  .certificates-list { margin: 0; padding: 0; list-style: none; }
+  .formation-hint {
+    position: absolute;
+    left: var(--space-40);
+    bottom: var(--space-28);
+    font-size: var(--font-size-11);
+    line-height: var(--line-height-16);
+    color: var(--color-text-secondary);
+  }
+  /* Fallback simples até o handoff mobile; posições aprovadas em desktop. */
+  @media (max-width: 1439px) {
+    .formation { padding-inline: clamp(16px, 5.5556vw, 80px); }
+    .certificates-surface { height: auto; padding: clamp(16px, 3vw, 40px); }
+    .formation-intro { position: static; width: min(560px, 100%); }
+    .certificates-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(286px, 100%), 1fr));
+      gap: var(--space-24);
+      margin-block: var(--space-40);
+    }
+    .formation-hint { position: static; }
+  }
+</style>

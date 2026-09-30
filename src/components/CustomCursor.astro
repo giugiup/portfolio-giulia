@@ -1,6 +1,12 @@
 <div class="custom-cursor" aria-hidden="true">
 	<span class="custom-cursor__pointer" aria-hidden="true">
 		<img src="/icons/about-pointer.svg" alt="" width="15.5117" height="15.1156" />
+		<svg class="custom-cursor__move-symbol" viewBox="0 0 14 14" aria-hidden="true">
+			<circle cx="7" cy="7" r=".85" fill="currentColor" />
+			<g class="custom-cursor__move-ticks" fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+				<path d="M7 3.4v1 M7 9.6v1 M3.4 7h1 M9.6 7h1" />
+			</g>
+		</svg>
 	</span>
 	<span class="custom-cursor__label">
 		<span class="custom-cursor__label-text">Você</span>
@@ -103,11 +109,11 @@
 		border-radius: 3px;
 		transform: rotate(0);
 	}
-	.custom-cursor[data-cursor-state='control'] .custom-cursor__pointer img {
+	.custom-cursor:is([data-cursor-state='control'], [data-cursor-state='move'], [data-cursor-state='grabbing']) .custom-cursor__pointer img {
 		opacity: 0;
 		transform: scale(.6);
 	}
-	.custom-cursor[data-cursor-state='control'] .custom-cursor__pointer::after {
+	.custom-cursor:is([data-cursor-state='control'], [data-cursor-state='move'], [data-cursor-state='grabbing']) .custom-cursor__pointer::after {
 		opacity: 1;
 		transform: scale(1);
 	}
@@ -115,7 +121,48 @@
 		opacity: 0;
 		transform: translate(14px, 14px) scale(.85);
 	}
+	.custom-cursor:is([data-cursor-state='move'], [data-cursor-state='grabbing']) .custom-cursor__pointer {
+		width: 14px;
+		height: 14px;
+		border-radius: 4.5px;
+		transform: rotate(0deg);
+	}
+	.custom-cursor[data-cursor-state='grabbing'] .custom-cursor__pointer {
+		transform: rotate(0deg) scale(.9);
+	}
+	.custom-cursor__move-symbol {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+		color: var(--color-text-inverse);
+		pointer-events: none;
+		opacity: 0;
+		transform: scale(.6);
+		transition: opacity 180ms cubic-bezier(.2,.8,.2,1), transform 180ms cubic-bezier(.2,.8,.2,1);
+	}
+	.custom-cursor:is([data-cursor-state='move'], [data-cursor-state='grabbing']) .custom-cursor__move-symbol {
+		opacity: 1;
+		transform: scale(1);
+	}
+	.custom-cursor__move-ticks {
+		transform-origin: 7px 7px;
+		transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+	}
+	.custom-cursor[data-cursor-state='move'] .custom-cursor__move-ticks {
+		animation: handle-recognize 220ms cubic-bezier(.2,.8,.2,1) 1;
+	}
+	.custom-cursor[data-cursor-state='grabbing'] .custom-cursor__move-ticks {
+		transform: scale(.78);
+	}
+	@keyframes handle-recognize {
+		0%, 100% { transform: scale(1); }
+		45% { transform: scale(1.3); }
+	}
 	@media (prefers-reduced-motion: reduce) {
+		.custom-cursor__move-ticks { animation: none !important; }
+		.custom-cursor__move-symbol, .custom-cursor__move-ticks { transition: none; }
 		.custom-cursor,
 		.custom-cursor__pointer,
 		.custom-cursor__pointer::after,
@@ -152,12 +199,15 @@
 
 		const pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
 		const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const formationQuery = window.matchMedia('(min-width: 1440px) and (pointer: fine)');
 		const labels: Record<string, string> = {
 			default: 'Você',
 			open: 'Abrir',
 			project: 'Ver projeto',
 			contact: 'Contato',
 			view: 'Ver',
+			move: 'Mover',
+			grabbing: 'Solte',
 		};
 		let pointerX = window.innerWidth / 2;
 		let pointerY = window.innerHeight / 2;
@@ -184,7 +234,10 @@
 		const updateState = (target: EventTarget | null) => {
 			hoveredTarget = target instanceof Element ? target.closest('[data-cursor]') : null;
 			const disabled = hoveredTarget?.matches(':disabled, [aria-disabled="true"]');
-			const key = !disabled && hoveredTarget ? hoveredTarget.getAttribute('data-cursor') || 'default' : 'default';
+			let key = !disabled && hoveredTarget ? hoveredTarget.getAttribute('data-cursor') || 'default' : 'default';
+			// Observe o estado real da Formation, inclusive durante pointer capture.
+			if (formationQuery.matches && document.querySelector('[data-cursor="move"].is-dragging')) key = 'grabbing';
+			else if (key === 'move' && !formationQuery.matches) key = 'default';
 			if (key === currentState) return;
 			currentState = key;
 			cursor.dataset.cursorState = key;
@@ -238,6 +291,17 @@
 		window.addEventListener('mouseleave', () => { updateState(null); hideCursor(); });
 		pointerQuery.addEventListener('change', updateEnabled);
 		reducedMotionQuery.addEventListener('change', updateEnabled);
+		formationQuery.addEventListener('change', () => {
+			if (enabled) updateState(document.elementFromPoint(pointerX, pointerY));
+		});
+
+		// Apenas observa classes: nenhuma duplicação de Pointer Events ou estado do drag.
+		const formationObserver = new MutationObserver(() => {
+			if (enabled) updateState(document.elementFromPoint(pointerX, pointerY));
+		});
+		document.querySelectorAll('[data-cursor="move"]').forEach((card) => {
+			formationObserver.observe(card, { attributes: true, attributeFilter: ['class'] });
+		});
 
 		// A Experience pode desabilitar a seta sob um ponteiro parado ao trocar de índice.
 		const controlObserver = new MutationObserver(() => {
