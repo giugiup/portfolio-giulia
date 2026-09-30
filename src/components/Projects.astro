@@ -50,7 +50,7 @@ import { projects } from '../data/projects.js';
 	}
 	@media (min-width: 1280px) {
 		.projects { padding-block: var(--space-80) var(--space-96); }
-		.projects__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-inline-size: 1248px; }
+		.projects__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-inline-size: none; }
 		/* Uma linha compartilhada permite offsets exatos sem reordenar o DOM.
 		 * Sua altura é determinada pelo card que termina mais abaixo (1187px). */
 		.projects__grid > li {

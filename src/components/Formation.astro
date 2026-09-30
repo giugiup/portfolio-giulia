@@ -172,6 +172,9 @@ import { certificates } from '../data/education.js';
     line-height: var(--line-height-16);
     color: var(--color-text-secondary);
   }
+  @media (min-width: 1280px) {
+    .formation { padding-bottom: var(--space-96); }
+  }
   /* Fallback simples até o handoff mobile; posições aprovadas em desktop. */
   @media (max-width: 1439px) {
     .formation { padding-inline: clamp(16px, 5.5556vw, 80px); }

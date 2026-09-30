@@ -489,6 +489,8 @@ const icons = {
 		}
 	}
 	@media (min-width: 1280px) {
+		/* Aproxima a entrada sem reduzir a altura do sticky ou seu percurso de scroll. */
+		.experience__layout { padding-block: var(--space-64) var(--space-96); }
 		.experience[data-scroll-driven] {
 			min-block-size: calc(var(--experience-sticky-height, var(--experience-visual-height)) + var(--experience-scroll-distance, 0px));
 		}
