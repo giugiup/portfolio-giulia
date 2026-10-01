@@ -1,0 +1,40 @@
+---
+import ProjectTitle from './ProjectTitle.astro';
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  tags: readonly string[];
+  type?: string | readonly string[];
+  client?: string;
+  year?: string | number;
+  compact?: boolean;
+  showTitle?: boolean;
+}
+const { id, title, description, tags, type, client, year, compact = false, showTitle = true } = Astro.props;
+const types = type ? (Array.isArray(type) ? type : [type]) : tags;
+---
+<div class:list={['project-info', { 'project-info--compact': compact }]}>
+  <div class="project-info__intro">
+    {showTitle && <ProjectTitle id={id} title={title} compact={compact} />}
+    <p>{description}</p>
+  </div>
+  <dl class="project-info__facts">
+    <div><dt>Projeto</dt><dd>{types.map((item) => <span>{item}</span>)}</dd></div>
+    <div><dt>Cliente</dt><dd>{client || '—'}</dd></div>
+    <div><dt>Ano</dt><dd>{year ?? '—'}</dd></div>
+  </dl>
+</div>
+<style>
+  .project-info { display: flex; flex: 1; flex-direction: column; justify-content: space-between; min-block-size: 0; gap: var(--space-40); }
+  .project-info__intro { display: flex; flex-direction: column; gap: var(--space-28); }
+  h3, p, dl, dd { margin: 0; }
+  p { max-inline-size: 370px; color: var(--projects-secondary); font-size: var(--font-size-16); line-height: 26px; letter-spacing: -.02em; }
+  .project-info__facts > div { display: grid; grid-template-columns: 102px minmax(0, 1fr); gap: var(--space-24); padding-block: var(--space-20); font-size: var(--font-size-13); line-height: var(--line-height-20); }
+  .project-info__facts > div + div { border-block-start: 1px solid var(--projects-border); }
+  .project-info__facts > div:last-child { padding-block-end: 0; }
+  dd { color: var(--projects-secondary); overflow-wrap: anywhere; }
+  dd span { display: block; }
+  .project-info--compact p { font-size: var(--font-size-15); line-height: var(--line-height-24); }
+  .project-info--compact .project-info__facts { display: none; }
+</style>

@@ -369,17 +369,25 @@ body {
 	line-height: var(--line-height-body, normal);
 	letter-spacing: var(--letter-spacing-body, normal);
 	color: var(--color-text-primary);
-	background: linear-gradient(
-		180deg,
-		#080203 0%,
-		#140304 22%,
-		#260606 52%,
-		#400B0B 100%
-	);
+	background: var(--color-bg-page);
 }
 
 main {
 	background: transparent;
+}
+
+/* Ambiente único após o Hero; percentuais acompanham a altura real do conteúdo.
+ * Sem overflow/transform no wrapper para preservar os descendentes sticky. */
+.post-hero-background {
+	background: linear-gradient(
+		180deg,
+		var(--color-dark) 0%,
+		color-mix(in srgb, var(--color-dark), var(--color-deep-wine) 20%) 12%,
+		color-mix(in srgb, var(--color-dark), var(--color-deep-wine) 55%) 38%,
+		var(--color-deep-wine) 65%,
+		color-mix(in srgb, var(--color-deep-wine), var(--color-wine) 40%) 85%,
+		color-mix(in srgb, var(--color-deep-wine), var(--color-wine) 65%) 100%
+	);
 }
 
 /*

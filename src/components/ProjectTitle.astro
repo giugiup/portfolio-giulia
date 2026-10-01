@@ -1,0 +1,10 @@
+---
+interface Props { id: string; title: string; compact?: boolean; }
+const { id, title, compact = false } = Astro.props;
+---
+<h3 id={`${id}-${compact ? 'compact' : 'info'}-title`} class:list={{ compact }}>{title}</h3>
+<style>
+  h3 { margin: 0; font-size: clamp(36px, 3.35vw, 48px); font-weight: var(--font-weight-extra-bold); line-height: 1.13; letter-spacing: -.045em; overflow-wrap: anywhere; }
+  .compact { font-size: 34px; line-height: 40px; }
+  @media (max-width: 400px) { .compact { font-size: var(--font-size-30); line-height: 36px; } }
+</style>

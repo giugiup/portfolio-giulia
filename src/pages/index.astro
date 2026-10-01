@@ -19,11 +19,13 @@ const arrowIconSrc = '/icons/arrow-northeast.svg';
 	<Header contactHref={contactHref} logoSrc={headerLogoSrc} arrowIconSrc={arrowIconSrc} />
 	<main>
 		<Hero contactHref={contactHref} logoSrc={heroLogoSrc} arrowIconSrc={arrowIconSrc} />
-		<Projects />
-		<About />
-		<Experience />
-		<Formation />
-		<Contact href={contactHref} />
-		<Footer />
+		<div class="post-hero-background">
+			<Projects />
+			<About />
+			<Experience />
+			<Formation />
+			<Contact href={contactHref} />
+			<Footer />
+		</div>
 	</main>
 </Layout>

@@ -1,248 +1,240 @@
-<div class="hero__mesh" aria-hidden="true">
-	<canvas class="hero__mesh-canvas"></canvas>
-</div>
+<hero-mesh class="hero__mesh" aria-hidden="true">
+	<canvas class="hero__mesh-canvas" aria-hidden="true"></canvas>
+</hero-mesh>
 
 <script>
-	(() => {
-		const hero = document.querySelector('.hero');
-		const mesh = hero?.querySelector('.hero__mesh');
-		const canvas = mesh?.querySelector('canvas');
-		if (!hero || !mesh || !canvas) return;
+	function mountMesh(host: HTMLElement) {
+		const canvas = host.querySelector('canvas');
+		const hero = host.closest('.hero');
+		const ctx = canvas?.getContext('2d');
+		if (!canvas || !hero || !ctx) return;
 
-		mesh.style.position = 'absolute';
-		mesh.style.inset = '0';
-		mesh.style.zIndex = '0';
-		mesh.style.pointerEvents = 'none';
-		canvas.style.pointerEvents = 'none';
+		const CELL = 16;
+		const RADIUS = 170;
+		const PUSH = 9;
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let width = 0, height = 0, columns = 0, rows = 0;
+		let vx = new Float32Array(0), vy = new Float32Array(0);
+		let raf = 0, lastTime = 0, power = 0;
+		let inView = true, disposed = false;
+		const pointer = { x: 0, y: 0, clientX: 0, clientY: 0, active: false, known: false };
+		const eased = { x: 0, y: 0 };
 
-		const content = hero.querySelector('.hero__content');
-		const brands = hero.querySelector('.hero__brands');
-		if (content) content.style.zIndex = '2';
-		if (brands) brands.style.zIndex = '2';
-
-		const context = canvas.getContext('2d');
-		if (!context) return;
-
-		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		const touchMode = window.matchMedia('(pointer: coarse)').matches;
-		const LINK_DIST = 142;
-		const MOUSE_DIST = 210;
-		const state = {
-			width: 0,
-			height: 0,
-			dpr: 1,
-			nodes: [],
-			pointer: { x: 0, y: 0 },
-			easedPointer: { x: 0, y: 0 },
-			isActive: false,
-			raf: 0,
-		};
-
-		const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
-		const createNodes = () => {
-			const width = hero.clientWidth || 0;
-			const height = hero.clientHeight || 0;
-			if (!width || !height) return;
-
-			const area = width * height;
-			const target = Math.min(
-				130,
-				Math.max(
-					70,
-					Math.round(area / 11000)
-				)
-			);
-			const nodeCount = touchMode ? Math.min(62, target) : target;
-			const nodes = [];
-			const safeZoneLeft = width * 0.22;
-			const safeZoneRight = width * 0.78;
-			const safeZoneTop = height * 0.14;
-			const safeZoneBottom = height * 0.72;
-
-			while (nodes.length < nodeCount) {
-				const x = Math.random() * width;
-				const y = Math.random() * height;
-				const inSafeZone = x > safeZoneLeft && x < safeZoneRight && y > safeZoneTop && y < safeZoneBottom;
-				if (inSafeZone && Math.random() < 0.42) {
-					continue;
-				}
-
-				nodes.push({
-					ox: x,
-					oy: y,
-					x,
-					y,
-					ax: 14 + Math.random() * 26,
-					ay: 14 + Math.random() * 26,
-					fx: 0.12 + Math.random() * 0.22,
-					fy: 0.12 + Math.random() * 0.22,
-					phaseX: Math.random() * Math.PI * 2,
-					phaseY: Math.random() * Math.PI * 2,
-					radius: 0.8 + Math.random() * 1.4,
-				});
-			}
-
-			state.nodes = nodes;
-		};
-
-		const resizeCanvas = () => {
-			const rect = hero.getBoundingClientRect();
-			state.width = rect.width;
-			state.height = rect.height;
-			state.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-			canvas.width = Math.round(state.width * state.dpr);
-			canvas.height = Math.round(state.height * state.dpr);
-			canvas.style.width = `${state.width}px`;
-			canvas.style.height = `${state.height}px`;
-			context.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
-			createNodes();
-		};
-
-		const draw = () => {
-			const width = state.width;
-			const height = state.height;
-			if (!width || !height) return;
-
-			context.clearRect(0, 0, width, height);
-			const time = performance.now() * 0.001;
-
-			if (state.isActive) {
-				state.easedPointer.x += (state.pointer.x - state.easedPointer.x) * 0.12;
-				state.easedPointer.y += (state.pointer.y - state.easedPointer.y) * 0.12;
-			} else {
-				state.easedPointer.x += ((width * 0.5) - state.easedPointer.x) * 0.08;
-				state.easedPointer.y += ((height * 0.5) - state.easedPointer.y) * 0.08;
-			}
-
-			const nodes = state.nodes;
-			for (let index = 0; index < nodes.length; index += 1) {
-				const node = nodes[index];
-				const driftX = Math.sin(time * node.fx + node.phaseX) * node.ax;
-				const driftY = Math.cos(time * node.fy + node.phaseY) * node.ay;
-				let nextX = node.ox + driftX;
-				let nextY = node.oy + driftY;
-
-				if (state.isActive) {
-					const dx = nextX - state.easedPointer.x;
-					const dy = nextY - state.easedPointer.y;
-					const distance = Math.hypot(dx, dy) || 1;
-					if (distance < MOUSE_DIST) {
-						const pull = (1 - distance / MOUSE_DIST) * 24;
-						nextX += (dx / distance) * pull;
-						nextY += (dy / distance) * pull;
-					}
-				}
-
-				node.x = nextX;
-				node.y = nextY;
-			}
-
-			for (let index = 0; index < nodes.length; index += 1) {
-				for (let nextIndex = index + 1; nextIndex < nodes.length; nextIndex += 1) {
-					const a = nodes[index];
-					const b = nodes[nextIndex];
-					const dx = a.x - b.x;
-					const dy = a.y - b.y;
-					const distance = Math.hypot(dx, dy) || 1;
-
-					if (distance < LINK_DIST) {
-						const alpha = (1 - distance / LINK_DIST) * 0.22;
-						context.beginPath();
-						context.moveTo(a.x, a.y);
-						context.lineTo(b.x, b.y);
-						context.strokeStyle = `rgba(217, 185, 167, ${alpha})`;
-						context.lineWidth = 0.9;
-						context.stroke();
-					}
-				}
-			}
-
-			if (state.isActive) {
-				context.save();
-				context.setLineDash([6, 6]);
-				context.lineDashOffset = -time * 22;
-				for (let index = 0; index < nodes.length; index += 1) {
-					const node = nodes[index];
-					const dx = node.x - state.easedPointer.x;
-					const dy = node.y - state.easedPointer.y;
-					const distance = Math.hypot(dx, dy) || 1;
-					if (distance < MOUSE_DIST) {
-						context.beginPath();
-						context.moveTo(state.easedPointer.x, state.easedPointer.y);
-						context.lineTo(node.x, node.y);
-						context.strokeStyle = `rgba(242, 228, 220, ${(1 - distance / MOUSE_DIST) * 0.2})`;
-						context.stroke();
-					}
-				}
-				context.restore();
-			}
-
-			for (let index = 0; index < nodes.length; index += 1) {
-				const node = nodes[index];
-				let radius = node.radius;
-				if (state.isActive) {
-					const dx = node.x - state.easedPointer.x;
-					const dy = node.y - state.easedPointer.y;
-					const distance = Math.hypot(dx, dy) || 1;
-					if (distance < MOUSE_DIST) {
-						radius += (1 - distance / MOUSE_DIST) * 1.8;
-					}
-				}
-
-				context.beginPath();
-				context.fillStyle = `rgba(217, 185, 167, 0.9)`;
-				context.arc(node.x, node.y, radius, 0, Math.PI * 2);
-				context.fill();
-			}
-		};
-
-		const animate = () => {
-			if (reducedMotion) {
-				draw();
-				return;
-			}
-			draw();
-			state.raf = requestAnimationFrame(animate);
-		};
-
-		const handlePointerMove = (event) => {
-			const rect = hero.getBoundingClientRect();
-			state.pointer.x = event.clientX - rect.left;
-			state.pointer.y = event.clientY - rect.top;
-			state.isActive = true;
-		};
-
-		const handlePointerLeave = () => {
-			state.isActive = false;
-		};
-
-		hero.addEventListener('pointermove', handlePointerMove, { passive: true });
-		hero.addEventListener('pointerleave', handlePointerLeave);
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				const entry = entries[0];
-				if (!entry) return;
-				if (entry.isIntersecting) {
-					if (!reducedMotion && !state.raf) {
-						state.raf = requestAnimationFrame(animate);
-					}
-				} else if (state.raf) {
-					cancelAnimationFrame(state.raf);
-					state.raf = 0;
-				}
-			},
-			{ threshold: 0.1 }
-		);
-
-		observer.observe(hero);
-		window.addEventListener('resize', resizeCanvas, { passive: true });
-		resizeCanvas();
-		draw();
-
-		if (!reducedMotion && !state.raf) {
-			state.raf = requestAnimationFrame(animate);
+		function updatePointerPosition() {
+			if (!pointer.known) return;
+			const rect = canvas!.getBoundingClientRect();
+			pointer.x = pointer.clientX - rect.left;
+			pointer.y = pointer.clientY - rect.top;
+			pointer.active = pointer.x >= 0 && pointer.x <= rect.width && pointer.y >= 0 && pointer.y <= rect.height;
 		}
-	})();
+
+		function gridPath(left: number, right: number, top: number, bottom: number) {
+			const path = new Path2D();
+			for (let row = top; row <= bottom; row++) {
+				for (let col = left; col <= right; col++) {
+					const i = row * columns + col;
+					if (col === left) path.moveTo(vx[i], vy[i]);
+					else path.lineTo(vx[i], vy[i]);
+				}
+			}
+			for (let col = left; col <= right; col++) {
+				for (let row = top; row <= bottom; row++) {
+					const i = row * columns + col;
+					if (row === top) path.moveTo(vx[i], vy[i]);
+					else path.lineTo(vx[i], vy[i]);
+				}
+			}
+			return path;
+		}
+
+		function draw() {
+			ctx!.clearRect(0, 0, width, height);
+			for (let row = 0; row < rows; row++) {
+				for (let col = 0; col < columns; col++) {
+					const i = row * columns + col;
+					let x = col * CELL, y = row * CELL;
+					const dx = x - eased.x, dy = y - eased.y;
+					const distance = Math.hypot(dx, dy);
+					if (power > 0 && distance > 0 && distance < RADIUS) {
+						const t = 1 - distance / RADIUS;
+						const force = t * t * (3 - 2 * t) * PUSH * power;
+						x += dx / distance * force;
+						y += dy / distance * force;
+					}
+					vx[i] = x;
+					vy[i] = y;
+				}
+			}
+
+			// Only the local cursor window needs cell fills and highlighted lines.
+			const left = Math.max(0, Math.floor((eased.x - RADIUS) / CELL));
+			const right = Math.min(columns - 1, Math.ceil((eased.x + RADIUS) / CELL));
+			const top = Math.max(0, Math.floor((eased.y - RADIUS) / CELL));
+			const bottom = Math.min(rows - 1, Math.ceil((eased.y + RADIUS) / CELL));
+			if (power > 0) {
+				for (let row = top; row < bottom; row++) {
+					for (let col = left; col < right; col++) {
+						const distance = Math.hypot((col + 0.5) * CELL - eased.x, (row + 0.5) * CELL - eased.y);
+						const t = Math.max(0, 1 - distance / RADIUS);
+						const alpha = t * t * 0.16 * power;
+						if (alpha < 0.004) continue;
+						const i = row * columns + col;
+						ctx!.beginPath();
+						ctx!.moveTo(vx[i], vy[i]);
+						ctx!.lineTo(vx[i + 1], vy[i + 1]);
+						ctx!.lineTo(vx[i + columns + 1], vy[i + columns + 1]);
+						ctx!.lineTo(vx[i + columns], vy[i + columns]);
+						ctx!.closePath();
+						ctx!.fillStyle = `rgba(232, 160, 140, ${alpha})`;
+						ctx!.fill();
+					}
+				}
+			}
+			ctx!.lineWidth = 1;
+			ctx!.strokeStyle = 'rgba(217, 185, 167, 0.09)';
+			ctx!.stroke(gridPath(0, columns - 1, 0, rows - 1));
+			if (power <= 0) return;
+
+			const localPath = gridPath(left, right, top, bottom);
+			const highlight = ctx!.createRadialGradient(eased.x, eased.y, 0, eased.x, eased.y, RADIUS);
+			highlight.addColorStop(0, `rgba(242, 210, 195, ${0.22 * power})`);
+			highlight.addColorStop(1, 'rgba(242, 210, 195, 0)');
+			ctx!.strokeStyle = highlight;
+			ctx!.stroke(localPath);
+			const glow = ctx!.createRadialGradient(eased.x, eased.y, 0, eased.x, eased.y, RADIUS);
+			glow.addColorStop(0, 'rgba(242, 210, 195, 1)');
+			glow.addColorStop(0.7, 'rgba(242, 210, 195, 0.12)');
+			glow.addColorStop(1, 'rgba(242, 210, 195, 0)');
+			ctx!.save();
+			ctx!.globalAlpha = 0.28 * power;
+			ctx!.strokeStyle = glow;
+			ctx!.stroke(localPath);
+			ctx!.restore();
+		}
+
+		function stop() {
+			cancelAnimationFrame(raf);
+			raf = 0;
+			lastTime = 0;
+		}
+
+		function animate(time: number) {
+			raf = 0;
+			if (disposed || reducedMotion.matches || document.hidden || !inView) return;
+			const dt = Math.min(0.05, lastTime ? (time - lastTime) / 1000 : 1 / 60);
+			lastTime = time;
+			const k = 1 - Math.exp(-dt * 10);
+			eased.x += (pointer.x - eased.x) * k;
+			eased.y += (pointer.y - eased.y) * k;
+			power += ((pointer.active ? 1 : 0) - power) * (1 - Math.exp(-dt * 5));
+			if (!pointer.active && power < 0.0001) power = 0;
+			draw();
+			raf = requestAnimationFrame(animate);
+		}
+
+		function syncAnimation() {
+			stop();
+			if (reducedMotion.matches) {
+				power = 0;
+				draw();
+			} else if (!disposed && !document.hidden && inView) {
+				raf = requestAnimationFrame(animate);
+			}
+		}
+
+		function resize() {
+			const rect = hero!.getBoundingClientRect();
+			width = rect.width;
+			height = rect.height;
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			canvas!.width = Math.round(width * dpr);
+			canvas!.height = Math.round(height * dpr);
+			ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+			columns = Math.ceil(width / CELL) + 1;
+			rows = Math.ceil(height / CELL) + 1;
+			vx = new Float32Array(columns * rows);
+			vy = new Float32Array(columns * rows);
+			updatePointerPosition();
+			draw();
+		}
+
+		function onPointer(event: PointerEvent) {
+			const firstPosition = !pointer.known;
+			pointer.clientX = event.clientX;
+			pointer.clientY = event.clientY;
+			pointer.known = true;
+			updatePointerPosition();
+			if (firstPosition) {
+				eased.x = pointer.x;
+				eased.y = pointer.y;
+			}
+		}
+		function leave() { pointer.active = false; pointer.known = false; }
+		function releaseTouch(event: PointerEvent) { if (event.pointerType !== 'mouse') leave(); }
+		function onVisibility() { if (document.hidden) leave(); syncAnimation(); }
+
+		const resizeObserver = new ResizeObserver(resize);
+		resizeObserver.observe(hero);
+		const intersectionObserver = new IntersectionObserver(([entry]) => {
+			inView = entry.isIntersecting;
+			if (!inView) leave();
+			syncAnimation();
+		});
+		intersectionObserver.observe(hero);
+		window.addEventListener('pointermove', onPointer, { passive: true });
+		window.addEventListener('pointerdown', onPointer, { passive: true });
+		window.addEventListener('pointerup', releaseTouch, { passive: true });
+		window.addEventListener('pointercancel', leave, { passive: true });
+		window.addEventListener('scroll', updatePointerPosition, { passive: true });
+		window.addEventListener('resize', resize, { passive: true });
+		window.addEventListener('blur', leave);
+		document.addEventListener('pointerleave', leave);
+		document.addEventListener('visibilitychange', onVisibility);
+		reducedMotion.addEventListener('change', syncAnimation);
+		resize();
+		syncAnimation();
+
+		return () => {
+			disposed = true;
+			stop();
+			resizeObserver.disconnect();
+			intersectionObserver.disconnect();
+			window.removeEventListener('pointermove', onPointer);
+			window.removeEventListener('pointerdown', onPointer);
+			window.removeEventListener('pointerup', releaseTouch);
+			window.removeEventListener('pointercancel', leave);
+			window.removeEventListener('scroll', updatePointerPosition);
+			window.removeEventListener('resize', resize);
+			window.removeEventListener('blur', leave);
+			document.removeEventListener('pointerleave', leave);
+			document.removeEventListener('visibilitychange', onVisibility);
+			reducedMotion.removeEventListener('change', syncAnimation);
+		};
+	}
+
+	class HeroMeshElement extends HTMLElement {
+		private cleanup?: () => void;
+		connectedCallback() { this.cleanup?.(); this.cleanup = mountMesh(this); }
+		disconnectedCallback() { this.cleanup?.(); this.cleanup = undefined; }
+	}
+	if (!customElements.get('hero-mesh')) customElements.define('hero-mesh', HeroMeshElement);
 </script>
+
+<style>
+	.hero__mesh {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+	.hero__mesh-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		-webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, rgba(0, 0, 0, .5) 72%, transparent 100%);
+		mask-image: linear-gradient(to bottom, black 0%, black 45%, rgba(0, 0, 0, .5) 72%, transparent 100%);
+	}
+</style>

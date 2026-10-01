@@ -1,62 +1,208 @@
 ---
-import ProjectCard from './ProjectCard.astro';
+import ProjectInfo from './ProjectInfo.astro';
+import ProjectTitle from './ProjectTitle.astro';
+import ProjectCover from './ProjectCover.astro';
 import { projects } from '../data/projects.js';
+
+// Os outros slots permanecem nos dados para a futura etapa de expansão.
+const initialProjects = projects.slice(0, 3);
+const totalProjects = projects.length;
+const activeIndex = 0;
+const firstProject = initialProjects[activeIndex];
 ---
 
-<section id="projetos" class="projects page-gutters" aria-labelledby="projects-title">
-	<h2 id="projects-title" class="projects__title">01 — Projetos</h2>
-	<div class="container">
-		<ol class="projects__grid" role="list">
-			{projects.map(({ column, offset, figmaNode, ...project }) => (
-				<li style={`--project-column: ${column}; --project-offset: ${offset}px`}>
-					<ProjectCard {...project} />
-				</li>
-			))}
-		</ol>
-	</div>
+<section id="projetos" class="projects page-gutters" aria-labelledby="projects-title" data-total-projects={totalProjects}>
+  <div class="container">
+    <h2 id="projects-title" class="projects__accessible-title">Projetos selecionados</h2>
+    <div class="projects__layout">
+      {firstProject && <div class="projects__info">
+        <div class="project-title-viewport">
+          {initialProjects.map((project, index) => (
+            <div class:list={['project-title-panel', { 'is-active': index === activeIndex }]} aria-hidden={index !== activeIndex ? 'true' : 'false'} inert={index !== activeIndex}>
+              <ProjectTitle id={project.id} title={project.title} />
+            </div>
+          ))}
+        </div>
+        <div class="projects__panels">
+          {initialProjects.map((project, index) => (
+            <div class:list={['projects__panel', { 'is-active': index === activeIndex }]} aria-hidden={index !== activeIndex ? 'true' : 'false'} inert={index !== activeIndex}>
+              <ProjectInfo {...project} showTitle={false} />
+            </div>
+          ))}
+        </div>
+        <div class="projects__progress" role="status" aria-live="off" aria-label={`Projeto ${activeIndex + 1} de ${totalProjects}`}>
+          <div class="projects__indicators" aria-hidden="true">
+            {initialProjects.map((_, index) => <span class:list={['projects__indicator', { 'is-active': index === 0 }]}><span /></span>)}
+          </div>
+          <span class="projects__counter" aria-hidden="true">{String(activeIndex + 1).padStart(2, '0')} / {String(totalProjects).padStart(2, '0')}</span>
+        </div>
+      </div>}
+      <div class="projects__visual-column">
+      <ol class="projects__list" role="list">
+        {initialProjects.map((project, index) => <li>
+          <div class="projects__compact-info"><ProjectInfo {...project} compact /></div>
+          <ProjectCover {...project} index={index} />
+        </li>)}
+      </ol>
+      <div class="projects__more-wrap">
+        <button class="projects__more" type="button" aria-disabled="true">
+          Ver mais
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v14m-6-6 6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+      </div>
+      </div>
+    </div>
+  </div>
 </section>
 
+<script>
+  const section = document.querySelector<HTMLElement>('#projetos');
+  if (section) {
+    const panels = [...section.querySelectorAll<HTMLElement>('.projects__panel')];
+    const titles = [...section.querySelectorAll<HTMLElement>('.project-title-panel')];
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktop = window.matchMedia('(min-width: 900px) and (min-height: 651px)');
+    const cancelTitleAnimations = () => titles.forEach((title) => title.getAnimations().forEach((animation) => animation.cancel()));
+    reducedMotion.addEventListener('change', cancelTitleAnimations);
+    desktop.addEventListener('change', cancelTitleAnimations);
+    const cards = [...section.querySelectorAll<HTMLElement>('.projects__list .project-cover')];
+    const indicators = [...section.querySelectorAll<HTMLElement>('.projects__indicator')];
+    const counter = section.querySelector<HTMLElement>('.projects__counter')!;
+    const progress = section.querySelector<HTMLElement>('.projects__progress')!;
+    const total = Number(section.dataset.totalProjects);
+    let activeIndex = 0;
+    let frame = 0;
+
+    function setActive(index: number) {
+      if (index === activeIndex) return;
+      const previous = activeIndex;
+      const direction = index > previous ? 1 : -1;
+      const outgoingTransform = getComputedStyle(titles[previous]).transform;
+      cancelTitleAnimations();
+      activeIndex = index;
+      titles.forEach((title, i) => {
+        const active = i === index;
+        title.classList.toggle('is-active', active);
+        title.setAttribute('aria-hidden', String(!active));
+        title.inert = !active;
+      });
+      if (!reducedMotion.matches && desktop.matches) {
+        const timing = { duration: 550, easing: 'cubic-bezier(.22,1,.36,1)' };
+        titles[previous].animate([
+          { transform: outgoingTransform, visibility: 'visible' },
+          { transform: `translateY(${-direction * 110}%)`, visibility: 'visible' },
+        ], timing);
+        titles[index].animate([
+          { transform: `translateY(${direction * 110}%)` },
+          { transform: 'translateY(0)' },
+        ], timing);
+      }
+      panels.forEach((panel, i) => {
+        const active = i === index;
+        panel.classList.toggle('is-active', active);
+        panel.setAttribute('aria-hidden', String(!active));
+        panel.inert = !active;
+      });
+      cards.forEach((card, i) => card.classList.toggle('is-active', i === index));
+      indicators.forEach((indicator, i) => indicator.classList.toggle('is-active', i === index));
+      counter.textContent = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+      progress.setAttribute('aria-label', `Projeto ${index + 1} de ${total}`);
+    }
+
+    function scheduleUpdate() {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const threshold = window.innerHeight * 0.48;
+        let nextActive = 0;
+        cards.forEach((card, index) => {
+          const rect = card.getBoundingClientRect();
+          if (rect.height > 0 && rect.top <= threshold) nextActive = index;
+        });
+        setActive(nextActive);
+      });
+    }
+
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    window.addEventListener('pageshow', scheduleUpdate);
+    window.addEventListener('load', scheduleUpdate, { once: true });
+    // Recalcula após carregamento de fontes/imagens e mudanças de altura do layout.
+    const observer = new ResizeObserver(scheduleUpdate);
+    observer.observe(document.body);
+    cards.forEach((card) => observer.observe(card));
+    document.fonts.ready.then(scheduleUpdate);
+    scheduleUpdate();
+  }
+</script>
+
 <style>
-	.projects {
-		padding-block: var(--section-padding-y);
-		background: var(--color-dark);
-	}
-	/* O frame não tem título visível; este nomeia a seção para leitores de tela. */
-	.projects__title {
-		position: absolute;
-		inline-size: 1px;
-		block-size: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-		border: 0;
-	}
-	.projects__grid {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		align-items: start;
-		gap: var(--layout-grid-gap);
-		max-inline-size: 400px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.projects__grid > li { min-inline-size: 0; }
-	/* Adaptação provisória, usando os breakpoints existentes do projeto. */
-	@media (min-width: 768px) {
-		.projects__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-inline-size: 824px; }
-	}
-	@media (min-width: 1280px) {
-		.projects { padding-block: var(--space-80) var(--space-96); }
-		.projects__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-inline-size: none; }
-		/* Uma linha compartilhada permite offsets exatos sem reordenar o DOM.
-		 * Sua altura é determinada pelo card que termina mais abaixo (1187px). */
-		.projects__grid > li {
-			grid-column: var(--project-column);
-			grid-row: 1;
-			margin-block-start: var(--project-offset);
-		}
-	}
+  .projects {
+    --projects-radius: 16px;
+    --projects-border: color-mix(in srgb, var(--color-sand-light) 14%, transparent);
+    --projects-secondary: color-mix(in srgb, var(--color-sand) 76%, transparent);
+    padding-block: 72px 112px;
+    background: transparent;
+  }
+  .projects__accessible-title { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+  .projects__layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-80); align-items: start; }
+  .projects__info { display: flex; flex-direction: column; block-size: 650px; min-inline-size: 0; }
+  .projects__panels { position: relative; flex: 1; min-block-size: 0; }
+  .project-title-viewport { display: grid; overflow: hidden; flex-shrink: 0; margin-block-end: var(--space-28); }
+  .project-title-panel { grid-area: 1 / 1; min-inline-size: 0; visibility: hidden; }
+  .project-title-panel.is-active { visibility: visible; }
+  .projects__visual-column { min-inline-size: 0; }
+  .projects__more-wrap { display: flex; justify-content: center; margin-block-start: var(--space-40); }
+  .projects__more {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-16);
+    min-inline-size: 212px; min-block-size: 62px; padding: 0 var(--space-28);
+    border: 1px solid rgba(242,228,220,.28); border-radius: var(--radius-full);
+    background: linear-gradient(135deg, rgba(242,228,220,.085), rgba(242,228,220,.025) 50%, rgba(242,228,220,.055));
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--color-text-primary);
+    transition: transform 300ms cubic-bezier(.22,1,.36,1), background-color 300ms ease, border-color 300ms ease;
+  }
+  @media (hover: hover) { .projects__more:hover { transform: translateY(-2px); background-color: rgba(242,228,220,.04); border-color: rgba(242,228,220,.4); } }
+  .projects__more:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
+  .projects__panel {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    opacity: 0; transform: translateY(20px); visibility: hidden;
+    transition: opacity 350ms ease, transform 500ms cubic-bezier(.22, 1, .36, 1), visibility 0s 500ms;
+  }
+  .projects__panel.is-active { opacity: 1; transform: translateY(0); visibility: visible; transition-delay: 0s; }
+  .projects__progress { display: flex; align-items: center; justify-content: space-between; block-size: 28px; flex-shrink: 0; margin-block-start: var(--space-40); }
+  .projects__indicators { display: flex; gap: 14px; }
+  .projects__indicator { display: grid; place-items: center; inline-size: 28px; block-size: 28px; }
+  .projects__indicator span { inline-size: 6px; block-size: 6px; border-radius: var(--radius-full); background: var(--color-sand); opacity: .25; }
+  .projects__indicator.is-active span { inline-size: 18px; opacity: 1; }
+  .projects__indicator span { transition: inline-size 300ms ease, opacity 300ms ease; }
+  .projects__counter { color: var(--projects-secondary); font-size: var(--font-size-11); line-height: var(--line-height-16); letter-spacing: .06em; }
+  .projects__list { display: flex; flex-direction: column; gap: var(--space-24); margin: 0; padding: 0; list-style: none; min-inline-size: 0; }
+  .projects__list > li { min-inline-size: 0; }
+  .projects__compact-info { display: none; }
+  @media (min-width: 900px) and (min-height: 651px) {
+    .projects__info {
+      --projects-sticky-top: calc(var(--nav-height) + var(--space-32));
+      --projects-sticky-available-height: calc(100svh - var(--projects-sticky-top) - var(--space-8));
+      position: sticky;
+      top: var(--projects-sticky-top);
+      block-size: min(650px, var(--projects-sticky-available-height));
+      min-block-size: min(540px, var(--projects-sticky-available-height));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .projects__more { transition: none; }
+    .projects__more:hover { transform: none; }
+    .projects__panel { transform: none; transition: none; }
+    .projects__indicator span { transition: none; }
+  }
+  @media (min-width: 900px) and (max-width: 1199px) { .projects__layout { gap: var(--space-48); grid-template-columns: minmax(0, 3fr) minmax(0, 5fr); } }
+  /* Base compacta para evitar overflow; refinamento responsivo fica para a próxima etapa. */
+  @media (max-width: 899px), (max-height: 650px) {
+    .projects { padding-block: var(--space-40) var(--space-64); }
+    .projects__layout { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+    .projects__info { display: none; }
+    .project-title-viewport, .projects__panels, .projects__progress { display: none; }
+    .projects__compact-info { display: block; margin-block-end: var(--space-28); }
+    .projects__list { gap: var(--space-64); }
+  }
 </style>
