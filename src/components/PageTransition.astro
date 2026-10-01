@@ -1,0 +1,165 @@
+---
+import artwork from '../../public/images/giulia-logo-hero.svg?raw';
+// Namespace only the IDs: the Hero asset and its geometry remain untouched.
+const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
+---
+
+<div class="page-transition" data-page-transition aria-hidden="true">
+  <span class="page-transition__logo" aria-hidden="true" set:html={logo} />
+</div>
+<span class="page-transition__status" role="status" aria-live="polite" aria-atomic="true"></span>
+
+<style>
+  .page-transition { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 2147483647; display: grid; place-items: center; opacity: 0; visibility: hidden; pointer-events: none; background: var(--color-deep-wine); cursor: none; touch-action: none; }
+  .page-transition[data-active] { visibility: visible; pointer-events: auto; }
+  .page-transition__logo { display: block; width: 60px; opacity: 0; }
+  .page-transition__logo :global(svg) { width: 100%; height: auto; }
+  .page-transition__logo :global(path) { transform-box: fill-box; transform-origin: center; }
+  .page-transition__status { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+  :global(html[data-project-transition-active] .custom-cursor) { visibility: hidden !important; opacity: 0 !important; }
+  @media (max-width: 599px) { .page-transition__logo { width: 52px; } }
+  @media (prefers-reduced-motion: reduce) { .page-transition__logo { display: none; } }
+</style>
+
+<script>
+  (() => {
+    const overlay = document.querySelector<HTMLElement>('[data-page-transition]');
+    const logo = overlay?.querySelector<HTMLElement>('.page-transition__logo');
+    const status = document.querySelector<HTMLElement>('.page-transition__status');
+    if (!overlay || !logo || !status) return;
+    const root = document.documentElement;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const easing = 'cubic-bezier(.22,1,.36,1)';
+    // All times are milliseconds from the same document timeline origin.
+    const timeline = {
+      enter: 250, g: 700,
+      iStart: 600, iDuration: 450,
+      uStart: 1050, uDuration: 550,
+      logoColorDuration: 250,
+      fadeStart: 1750, fadeDuration: 250,
+      sandHold: 200, returnDuration: 600,
+    };
+    type ProjectDetail = { url?: string; slug?: string };
+    let isTransitioning = false;
+    let animations: Animation[] = [];
+
+    function resetTransition() {
+      // Hide first: cancelling fill effects restores the original SVG and CSS
+      // (including light fill, transforms, opacity and background) off-screen.
+      overlay!.removeAttribute('data-active');
+      delete overlay!.dataset.stage;
+      animations.forEach((animation) => animation.cancel());
+      animations = [];
+      status!.textContent = '';
+      root.removeAttribute('data-project-transition-active');
+      isTransitioning = false;
+    }
+
+    function onTransitionReady(detail: ProjectDetail) {
+      // Future navigation boundary: solid Sand and completely invisible logo.
+      // No navigation yet; the prototype holds Sand, then reveals the same page.
+      overlay!.dataset.stage = 'ready';
+      document.dispatchEvent(new CustomEvent('project-transition:ready', { detail }));
+    }
+
+    // Preserve focus and scroll without changing layout, overflow or scroll position.
+    const blockInteraction = (event: Event) => {
+      if (!isTransitioning) return;
+      if (event.cancelable) event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    for (const type of ['click', 'dblclick', 'pointerdown', 'keydown', 'wheel', 'touchmove']) {
+      window.addEventListener(type, blockInteraction, { capture: true, passive: false });
+    }
+
+    document.addEventListener('project-transition:start', async (event) => {
+      if (isTransitioning) return;
+      resetTransition();
+      isTransitioning = true;
+      try {
+        const detail = (event as CustomEvent<ProjectDetail>).detail ?? {};
+        root.setAttribute('data-project-transition-active', '');
+        overlay.setAttribute('data-active', '');
+        overlay.dataset.stage = 'building';
+        status.textContent = 'Carregando projeto';
+        const colors = getComputedStyle(root);
+        const deep = colors.getPropertyValue('--color-deep-wine').trim();
+        const wine = colors.getPropertyValue('--color-accent').trim();
+        const sand = colors.getPropertyValue('--color-sand').trim();
+        const light = colors.getPropertyValue('--color-sand-light').trim();
+        const reduce = reducedMotion.matches;
+        const t = reduce ? {
+          enter: 100, g: 0, iStart: 100, iDuration: 150,
+          uStart: 250, uDuration: 150, fadeStart: 400, fadeDuration: 0,
+          sandHold: 150, returnDuration: 300,
+        } : timeline;
+        const readyAt = t.fadeStart + t.fadeDuration;
+        const origin = document.timeline.currentTime;
+        const animate = (element: Element, frames: Keyframe[], duration: number, delay = 0) => {
+          const animation = element.animate(frames, { duration, delay, easing, fill: 'both' });
+          animation.startTime = origin;
+          animations.push(animation);
+          return animation;
+        };
+        animate(overlay, [{ opacity: 0 }, { opacity: 1 }], t.enter);
+        const background = animate(overlay, [
+          { backgroundColor: deep, offset: 0 },
+          { backgroundColor: deep, offset: t.iStart / readyAt, easing },
+          { backgroundColor: wine, offset: (t.iStart + t.iDuration) / readyAt },
+          { backgroundColor: wine, offset: t.uStart / readyAt, easing },
+          { backgroundColor: sand, offset: (t.uStart + t.uDuration) / readyAt },
+          { backgroundColor: sand, offset: 1 },
+        ], readyAt);
+        // Linear master time; easing applies within the two color segments.
+        background.effect!.updateTiming({ easing: 'linear' });
+        if (!reduce) {
+          // All letters darken together with U; fill persists through the final fade.
+          logo.querySelectorAll('path').forEach((path) => {
+            animate(path, [{ fill: light }, { fill: deep }], timeline.logoColorDuration, t.uStart);
+          });
+          animate(logo, [
+            { opacity: 1, offset: 0 },
+            { opacity: 1, offset: t.fadeStart / readyAt },
+            { opacity: 0, offset: 1 },
+          ], readyAt).effect!.updateTiming({ easing: 'linear' });
+          animate(logo.querySelector('#transition-G')!, [
+            { opacity: 0, transform: 'translateX(36.59405px)' },
+            { opacity: 1, transform: 'translateX(0)' },
+          ], t.g);
+          animate(logo.querySelector('#transition-Dot')!, [
+            { opacity: 0, transform: 'scale(.65)' }, { opacity: 1, transform: 'scale(1)' },
+          ], 160, t.iStart);
+          animate(logo.querySelector('#transition-I')!, [
+            { opacity: 0, transform: 'translateY(-12px)' }, { opacity: 1, transform: 'translateY(0)' },
+          ], t.iDuration, t.iStart);
+          animate(logo.querySelector('#transition-U')!, [
+            { opacity: 0, transform: 'translateX(5px) scale(.94)' }, { opacity: 1, transform: 'translateX(0) scale(1)' },
+          ], t.uDuration, t.uStart);
+        }
+        await Promise.all(animations.map((animation) => animation.finished));
+        onTransitionReady(detail);
+        // A constant animation provides a cancellable hold without scattered timers.
+        const hold = overlay.animate([{ backgroundColor: sand }, { backgroundColor: sand }], { duration: t.sandHold });
+        animations.push(hold);
+        await hold.finished;
+        overlay.dataset.stage = 'returning';
+        const returning = overlay.animate([
+          { backgroundColor: sand, opacity: 1, offset: 0, easing },
+          { backgroundColor: wine, opacity: 1, offset: .4, easing },
+          { backgroundColor: deep, opacity: 1, offset: .65, easing },
+          { backgroundColor: deep, opacity: 0, offset: 1 },
+        ], { duration: t.returnDuration, fill: 'forwards' });
+        animations.push(returning);
+        await returning.finished;
+      } catch (error) {
+        // Cancellation must not leave an unhandled rejection or lock the next run.
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          console.error('PageTransition failed:', error);
+        }
+      } finally {
+        resetTransition();
+        document.dispatchEvent(new CustomEvent('project-transition:end'));
+      }
+    });
+  })();
+</script>

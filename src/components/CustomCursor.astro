@@ -253,6 +253,10 @@
 		};
 		const showCursor = () => { if (enabled) cursor.classList.add('is-visible'); };
 		const hideCursor = () => cursor.classList.remove('is-visible');
+		document.addEventListener('project-transition:end', () => {
+			cursor.classList.remove('is-pressed');
+			if (enabled) updateState(document.elementFromPoint(pointerX, pointerY));
+		});
 
 		const updateEnabled = () => {
 			// Mantém a política existente: cursor nativo em touch ou reduced motion.

@@ -4,27 +4,28 @@ import ProjectTitle from './ProjectTitle.astro';
 import ProjectCover from './ProjectCover.astro';
 import { projects } from '../data/projects.js';
 
-// Os outros slots permanecem nos dados para a futura etapa de expansão.
-const initialProjects = projects.slice(0, 3);
+const initialCount = 3;
+const initialProjects = projects.slice(0, initialCount);
+const additionalProjects = projects.slice(initialCount);
 const totalProjects = projects.length;
 const activeIndex = 0;
 const firstProject = initialProjects[activeIndex];
 ---
 
-<section id="projetos" class="projects page-gutters" aria-labelledby="projects-title" data-total-projects={totalProjects}>
+<section id="projetos" class="projects page-gutters" aria-labelledby="projects-title" data-total-projects={totalProjects} data-initial-count={initialCount}>
   <div class="container">
     <h2 id="projects-title" class="projects__accessible-title">Projetos selecionados</h2>
     <div class="projects__layout">
       {firstProject && <div class="projects__info">
         <div class="project-title-viewport">
-          {initialProjects.map((project, index) => (
+          {projects.map((project, index) => (
             <div class:list={['project-title-panel', { 'is-active': index === activeIndex }]} aria-hidden={index !== activeIndex ? 'true' : 'false'} inert={index !== activeIndex}>
               <ProjectTitle id={project.id} title={project.title} />
             </div>
           ))}
         </div>
         <div class="projects__panels">
-          {initialProjects.map((project, index) => (
+          {projects.map((project, index) => (
             <div class:list={['projects__panel', { 'is-active': index === activeIndex }]} aria-hidden={index !== activeIndex ? 'true' : 'false'} inert={index !== activeIndex}>
               <ProjectInfo {...project} showTitle={false} />
             </div>
@@ -32,7 +33,7 @@ const firstProject = initialProjects[activeIndex];
         </div>
         <div class="projects__progress" role="status" aria-live="off" aria-label={`Projeto ${activeIndex + 1} de ${totalProjects}`}>
           <div class="projects__indicators" aria-hidden="true">
-            {initialProjects.map((_, index) => <span class:list={['projects__indicator', { 'is-active': index === 0 }]}><span /></span>)}
+            {projects.map((_, index) => <span hidden={index >= initialCount} class:list={['projects__indicator', { 'is-active': index === 0 }]}><span /></span>)}
           </div>
           <span class="projects__counter" aria-hidden="true">{String(activeIndex + 1).padStart(2, '0')} / {String(totalProjects).padStart(2, '0')}</span>
         </div>
@@ -44,12 +45,19 @@ const firstProject = initialProjects[activeIndex];
           <ProjectCover {...project} index={index} />
         </li>)}
       </ol>
+      <ol id="projects-additional" class="projects__list projects__additional" role="list" start={initialCount + 1} hidden>
+        {additionalProjects.map((project, index) => <li>
+          <div class="projects__compact-info"><ProjectInfo {...project} compact /></div>
+          <ProjectCover {...project} index={index + initialCount} />
+        </li>)}
+      </ol>
       <div class="projects__more-wrap">
-        <button class="projects__more" type="button" aria-disabled="true">
-          Ver mais
+        <button class="projects__more" type="button" aria-expanded="false" aria-controls="projects-additional" hidden={additionalProjects.length === 0}>
+          <span>Ver mais</span>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v14m-6-6 6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
         </button>
       </div>
+      <p class="projects__accessible-title" data-projects-announcement role="status" aria-live="polite" aria-atomic="true"></p>
       </div>
     </div>
   </div>
@@ -70,6 +78,13 @@ const firstProject = initialProjects[activeIndex];
     const counter = section.querySelector<HTMLElement>('.projects__counter')!;
     const progress = section.querySelector<HTMLElement>('.projects__progress')!;
     const total = Number(section.dataset.totalProjects);
+    const initialCount = Number(section.dataset.initialCount);
+    const additional = section.querySelector<HTMLOListElement>('#projects-additional')!;
+    const more = section.querySelector<HTMLButtonElement>('.projects__more')!;
+    const announcement = section.querySelector<HTMLElement>('[data-projects-announcement]')!;
+    let expanded = false;
+    let isToggling = false;
+    const visibleProjects = () => expanded ? cards : cards.slice(0, initialCount);
     let activeIndex = 0;
     let frame = 0;
 
@@ -115,13 +130,88 @@ const firstProject = initialProjects[activeIndex];
         frame = 0;
         const threshold = window.innerHeight * 0.48;
         let nextActive = 0;
-        cards.forEach((card, index) => {
+        visibleProjects().forEach((card, index) => {
           const rect = card.getBoundingClientRect();
           if (rect.height > 0 && rect.top <= threshold) nextActive = index;
         });
         setActive(nextActive);
       });
     }
+
+    async function scrollToProject(index: number) {
+      const card = cards[index];
+      if (!card) return;
+      const destination = desktop.matches ? card : card.closest('li')!;
+      const top = window.scrollY + destination.getBoundingClientRect().top;
+      // Preserve the existing navigation offset independently of the sticky offset.
+      const offset = parseFloat(getComputedStyle(section!).getPropertyValue('--nav-height')) + 32;
+      const header = document.querySelector('header')?.getBoundingClientRect().height ?? 0;
+      const target = Math.max(0, top - (Number.isFinite(offset) ? offset : header + 32));
+      window.scrollTo({ top: target, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+      if (reducedMotion.matches) return;
+      // Wait for native scroll to settle before removing height on collapse.
+      // A bounded RAF check also handles user interruption and clamped page ends.
+      await new Promise<void>((resolve) => {
+        let previous = window.scrollY;
+        let stable = 0;
+        const started = performance.now();
+        function check(now: number) {
+          stable = Math.abs(window.scrollY - previous) < .5 ? stable + 1 : 0;
+          previous = window.scrollY;
+          if ((stable >= 4 && now - started > 150) || now - started > 1800) resolve();
+          else requestAnimationFrame(check);
+        }
+        requestAnimationFrame(check);
+      });
+    }
+
+    async function animateAdditional(entering: boolean) {
+      if (reducedMotion.matches) return;
+      const animations = [...additional.children].map((item, index) => item.animate([
+        { opacity: entering ? 0 : 1, transform: `translateY(${entering ? 24 : 0}px)` },
+        { opacity: entering ? 1 : 0, transform: `translateY(${entering ? 0 : 16}px)` },
+      ], { duration: entering ? 500 : 350, delay: entering ? index * 75 : 0, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }));
+      const cancel = () => animations.forEach((animation) => animation.cancel());
+      reducedMotion.addEventListener('change', cancel, { once: true });
+      try { await Promise.all(animations.map((animation) => animation.finished)); }
+      catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) throw error; }
+      finally {
+        if (!entering) additional.hidden = true;
+        cancel();
+        reducedMotion.removeEventListener('change', cancel);
+      }
+    }
+
+    more.addEventListener('click', async () => {
+      if (isToggling) return;
+      isToggling = true;
+      more.setAttribute('aria-disabled', 'true');
+      try {
+        if (!expanded) {
+          expanded = true;
+          additional.hidden = false;
+          indicators.forEach((indicator) => { indicator.hidden = false; });
+          more.setAttribute('aria-expanded', 'true');
+          more.querySelector('span')!.textContent = 'Ver menos';
+          await Promise.all([animateAdditional(true), scrollToProject(initialCount)]);
+          announcement.textContent = `Mais ${cards.length - initialCount} projetos exibidos.`;
+        } else {
+          await scrollToProject(initialCount - 1);
+          expanded = false;
+          if (activeIndex >= initialCount) setActive(initialCount - 1);
+          await animateAdditional(false);
+          additional.hidden = true;
+          indicators.forEach((indicator, index) => { indicator.hidden = index >= initialCount; });
+          more.setAttribute('aria-expanded', 'false');
+          more.querySelector('span')!.textContent = 'Ver mais';
+          announcement.textContent = 'Projetos adicionais ocultados.';
+        }
+      } finally {
+        more.removeAttribute('aria-disabled');
+        isToggling = false;
+        scheduleUpdate();
+      }
+    });
 
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
@@ -152,6 +242,8 @@ const firstProject = initialProjects[activeIndex];
   .project-title-panel { grid-area: 1 / 1; min-inline-size: 0; visibility: hidden; }
   .project-title-panel.is-active { visibility: visible; }
   .projects__visual-column { min-inline-size: 0; }
+  .projects [hidden] { display: none !important; }
+  .projects__more[aria-expanded='true'] svg { transform: rotate(180deg); }
   .projects__more-wrap { display: flex; justify-content: center; margin-block-start: var(--space-40); }
   .projects__more {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--space-16);
@@ -178,16 +270,17 @@ const firstProject = initialProjects[activeIndex];
   .projects__counter { color: var(--projects-secondary); font-size: var(--font-size-11); line-height: var(--line-height-16); letter-spacing: .06em; }
   .projects__list { display: flex; flex-direction: column; gap: var(--space-24); margin: 0; padding: 0; list-style: none; min-inline-size: 0; }
   .projects__list > li { min-inline-size: 0; }
+  .projects__list.projects__additional { margin-block-start: var(--space-24); }
   .projects__compact-info { display: none; }
   @media (min-width: 900px) and (min-height: 651px) {
     .projects__info {
-      --projects-sticky-top: calc(var(--nav-height) + var(--space-32));
-      --projects-sticky-available-height: calc(100svh - var(--projects-sticky-top) - var(--space-8));
       position: sticky;
-      top: var(--projects-sticky-top);
-      block-size: min(650px, var(--projects-sticky-available-height));
-      min-block-size: min(540px, var(--projects-sticky-available-height));
+      top: calc(var(--nav-height) + var(--space-80));
+      block-size: auto;
     }
+    /* Overlapping panels remain in flow, giving the complete block its natural height. */
+    .projects__panels { display: grid; flex: none; }
+    .projects__panel { position: relative; inset: auto; grid-area: 1 / 1; }
   }
   @media (prefers-reduced-motion: reduce) {
     .projects__more { transition: none; }
@@ -204,5 +297,6 @@ const firstProject = initialProjects[activeIndex];
     .project-title-viewport, .projects__panels, .projects__progress { display: none; }
     .projects__compact-info { display: block; margin-block-end: var(--space-28); }
     .projects__list { gap: var(--space-64); }
+    .projects__list.projects__additional { margin-block-start: var(--space-64); }
   }
 </style>

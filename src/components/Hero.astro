@@ -2,7 +2,6 @@
 import Button from './Button.astro';
 import HeroMesh from './HeroMesh.astro';
 import HeroLogo from './HeroLogo.astro';
-import { heroLogos } from '../data/heroLogos.js';
 
 const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 ---
@@ -21,20 +20,13 @@ const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 		<p class="hero__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet dui nec odio tempor tempor ut sed purus. Morbi tempus justo eu bibendum convallis.</p>
 		<Button text="Entre em contato" href={contactHref} variant="hero" iconSrc={arrowIconSrc} disabled={!contactHref} />
 	</div>
-	<div class="hero__brands" aria-hidden={heroLogos.length === 0 ? 'true' : undefined}>
-		<div class="hero__brands-viewport">
-			{heroLogos.length > 0 && (
-				<div class="hero__brands-track">
-					{[0, 1].map((cycle) => (
-						<ul class="hero__brands-list" aria-label={cycle === 0 ? 'Marcas' : undefined} aria-hidden={cycle === 1 ? 'true' : undefined}>
-							{heroLogos.map(({ src, alt, width, height, cropped }) => (
-								<li class:list={{ 'hero__brand-crop': cropped }} style={cropped ? `inline-size: ${width}px` : undefined}><img src={src} alt={alt} width={width} height={height} loading="lazy" /></li>
-							))}
-						</ul>
-					))}
-				</div>
-			)}
-		</div>
+	<div class="hero__scroll-hint">
+		<p>
+			<span>Role para baixo</span>
+			<svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true" focusable="false">
+				<path d="m2 3 4 4 4-4M2 7l4 4 4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+		</p>
 	</div>
 </section>
 
@@ -84,6 +76,30 @@ const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 		padding: var(--layout-hero-padding-top) var(--layout-gutter) var(--layout-hero-padding-bottom);
 		text-align: center;
 	}
+	.hero__scroll-hint {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-block-size: var(--space-80);
+		padding-inline: var(--layout-gutter);
+	}
+	.hero__scroll-hint p {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+		font-family: var(--font-family-base);
+		font-size: var(--font-size-12);
+		font-weight: var(--font-weight-regular);
+		line-height: 1.5;
+		letter-spacing: .1em;
+		color: var(--color-sand);
+		opacity: .6;
+	}
+	.hero__scroll-hint span { display: block; line-height: 1; }
+	.hero__scroll-hint svg { display: block; flex: none; align-self: center; }
 	.hero__logo { position: relative; inline-size: 141px; block-size: 92px; flex: none; }
 	.hero h1 {
 		max-inline-size: 980px;
@@ -104,67 +120,6 @@ const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 		/* Figma 263:792: line-height AUTO, duas linhas/46px no desktop. */
 		line-height: normal;
 		overflow-wrap: anywhere;
-	}
-	.hero__brands {
-		position: relative;
-		z-index: 2;
-		display: flex;
-		align-items: flex-start;
-		min-block-size: 200px;
-		padding-block-end: var(--space-40);
-		padding-inline: var(--layout-gutter);
-	}
-	.hero__brands-viewport {
-		position: relative;
-		overflow: hidden;
-		inline-size: 100%;
-		max-inline-size: var(--layout-content-max);
-		min-block-size: 160px;
-		margin-inline: auto;
-		mask-image: url('/images/brands-edge-mask.svg');
-		mask-size: 100% 160px;
-		mask-repeat: no-repeat;
-	}
-	.hero__brands-track {
-		position: absolute;
-		inset-block-start: 50px;
-		inset-inline-start: -112px;
-		display: flex;
-		inline-size: max-content;
-		gap: 0;
-		animation: logos-marquee 28s linear infinite;
-		will-change: transform;
-	}
-	.hero__brands-list {
-		display: flex;
-		align-items: center;
-		flex: none;
-		gap: var(--space-80);
-		block-size: 59px;
-		margin: 0;
-		padding: 0;
-		padding-right: var(--space-80);
-		list-style: none;
-	}
-	@keyframes logos-marquee {
-		from { transform: translate3d(0, 0, 0); }
-		to { transform: translate3d(-50%, 0, 0); }
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.hero__brands-track { animation: none; will-change: auto; }
-		.hero__brands-list[aria-hidden="true"] { display: none; }
-	}
-	.hero__brands-list li { flex: none; }
-	.hero__brands-list img { max-inline-size: none; }
-	.hero__brands-list li:not(.hero__brand-crop) img { height: auto; object-fit: contain; }
-	/* Transformação de image fill do node 324:220, preservando a fonte original. */
-	.hero__brand-crop { position: relative; overflow: hidden; aspect-ratio: 206 / 53; }
-	.hero__brand-crop img {
-		position: absolute;
-		inline-size: 108.47%;
-		block-size: 215.42%;
-		inset-inline-start: -4.24%;
-		inset-block-start: -53.11%;
 	}
 	@media (min-width: 1280px) {
 		.hero h1 { line-height: var(--line-height-64); }

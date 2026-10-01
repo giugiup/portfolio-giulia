@@ -6,7 +6,8 @@ interface Props {
   image?: { src: string; alt: string; width: number; height: number };
 }
 const { id, title, index, image } = Astro.props;
-const assetNumber = String(index + 1).padStart(2, '0');
+// Only three decorative placeholder sets exist; reuse them for the extra slots.
+const assetNumber = String(index % 3 + 1).padStart(2, '0');
 ---
 <figure id={id} class:list={['project-cover', `project-cover--${assetNumber}`, { 'is-active': index === 0 }]} aria-label={title} data-cursor="project">
   {image ? <img class="project-cover__image" src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" /> : <>
@@ -16,8 +17,18 @@ const assetNumber = String(index + 1).padStart(2, '0');
       <figcaption><span>Capa do projeto</span><small>Espaço para a imagem final</small></figcaption>
     </div>
   </>}
+  <button class="project-cover__trigger" type="button" data-project-transition={id} data-cursor="project" aria-label={`Ver projeto: ${title}`}></button>
 </figure>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-project-transition]').forEach((button) => {
+    button.addEventListener('click', () => document.dispatchEvent(new CustomEvent('project-transition:start', {
+      detail: { slug: button.dataset.projectTransition },
+    })));
+  });
+</script>
 <style>
+  .project-cover__trigger { position: absolute; inset: 0; z-index: 1; inline-size: 100%; block-size: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; cursor: pointer; }
+  .project-cover__trigger:focus-visible { outline: 2px solid var(--color-sand-light); outline-offset: -6px; }
   .project-cover { position: relative; display: grid; place-items: center; inline-size: 100%; aspect-ratio: 800 / 650; margin: 0; overflow: clip; border: 1px solid var(--projects-border); border-radius: var(--projects-radius); opacity: .4; color: var(--color-sand-light); background: radial-gradient(ellipse 760px 650px at 8% 3%, var(--color-accent), transparent), var(--color-deep-wine); }
   .project-cover.is-active { opacity: 1; }
   .project-cover { transition: opacity 450ms ease; }
