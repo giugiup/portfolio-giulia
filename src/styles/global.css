@@ -161,6 +161,7 @@
 	--space-56: 56px;
 	--space-60: 60px;
 	--space-64: 64px;
+	--space-72: 72px;
 	--space-80: 80px;
 	--space-96: 96px;
 	--space-128: 128px;
@@ -240,6 +241,9 @@
 	--hero-padding-top-mobile: 80px;
 	--hero-padding-bottom-mobile: 80px;
 	--nav-height-mobile: 80px;
+	--hero-copy-width-mobile: 342px;
+	--hero-title-size-mobile: 36px;
+	--hero-title-leading-mobile: 1.1;
 	--font-size-hero-display-mobile: 40px;
 	--font-size-section-display-mobile: 30px;
 	--font-size-heading-large-mobile: 30px;
@@ -344,6 +348,13 @@
 }
 
 /* Global / base */
+@media (max-width: 899px) {
+	:root {
+		--nav-height-mobile: 72px;
+		--nav-height: var(--nav-height-mobile);
+	}
+}
+
 *,
 *::before,
 *::after {
@@ -402,6 +413,17 @@ main {
 	width: 100%;
 	max-width: var(--layout-content-max);
 	margin-inline: auto;
+}
+
+/* About e Experience compartilham a mesma hierarquia de título no compacto. */
+@media (width < 1280px) {
+	#about-title,
+	#experience-title {
+		font-size: var(--font-size-heading-large);
+		line-height: var(--line-height-38);
+		font-weight: var(--font-weight-extra-bold);
+		letter-spacing: 0;
+	}
 }
 
 img {

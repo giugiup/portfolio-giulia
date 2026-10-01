@@ -18,7 +18,14 @@ import artwork from '../../public/images/giulia-logo-hero.svg?raw';
 
 	.hero-logo :global(svg) { pointer-events: none; }
 
-	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+	@media (max-width: 899px) {
+		.hero-logo {
+			/* Scale the original 92px-high artwork into the 76px mobile slot. */
+			transform: scale(calc(76 / 92));
+			transform-origin: top left;
+		}
+	}
+	@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
 		.hero-logo :global(#G) {
 			/* Centraliza o G (48.3899) na largura original do SVG (121.578). */
 			transform: translateX(36.59405px);

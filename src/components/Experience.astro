@@ -1,5 +1,6 @@
 ---
 import { experiences } from '../data/experience.js';
+import ExperienceAccordion from './ExperienceAccordion.astro';
 
 // SVGs originais do Figma (20 × 20), incorporados para manter esta etapa em dois arquivos.
 const icons = {
@@ -14,8 +15,8 @@ const icons = {
 		<div class="experience__layout container">
 			<div class="experience__intro-column">
 				<header class="experience__intro">
-					<h2 id="experience-title">Minha trajetória conecta comunicação visual, web e UX/UI</h2>
-					<p class="experience__subtitle">evoluindo para interfaces, sistemas e experiências digitais.</p>
+					<h2 id="experience-title"><span class="experience__title-line">Cada experiência</span>{' '}<span class="experience__title-line">deixou uma marca</span>{' '}<span class="experience__title-line">no jeito que eu</span>{' '}<span class="experience__title-line">projeto hoje.</span></h2>
+					<p class="experience__subtitle">Passei por diferentes frentes do design e da comunicação, construindo um repertório que hoje levo para produtos e interfaces digitais.</p>
 				</header>
 				<div class="experience__navigation" role="group" aria-label="Navegação entre experiências">
 					<button class="experience__navigation-button" type="button" aria-label="Experiência anterior" data-experience-previous data-cursor="control" disabled>
@@ -27,6 +28,7 @@ const icons = {
 				</div>
 			</div>
 
+			<ExperienceAccordion />
 			<div class="experience__roulette">
 				<ol class="experience__track" role="list" aria-label="Experiências profissionais">
 					{experiences.map((experience, index) => (
@@ -94,9 +96,10 @@ const icons = {
 		let programmaticTargetIndex: number | null = null;
 
 		function scheduleCenter() {
-			if (measureFrame) return;
+			if (!desktop.matches || measureFrame) return;
 			measureFrame = requestAnimationFrame(() => {
 				measureFrame = 0;
+				if (!desktop.matches) return;
 				const entry = entries[activeIndex];
 				const entryCenter = entry.offsetTop + entry.offsetHeight / 2;
 				track.style.transform = `translateY(${viewport.clientHeight / 2 - entryCenter}px)`;
@@ -492,9 +495,13 @@ const icons = {
 			top: var(--nav-height);
 		}
 	}
-	/* Contenção provisória: layout mobile final será definido em outra etapa. */
+	/* No compacto, o accordion substitui os controles e a roleta. */
 	@media (max-width: 1279px) {
+		.experience__navigation,
+		.experience__roulette { display: none; }
+		.experience__title-line { display: block; white-space: nowrap; }
 		.experience__layout {
+			min-block-size: 0;
 			grid-template-columns: minmax(0, 1fr);
 			gap: var(--space-32);
 			padding-block: var(--section-padding-y);

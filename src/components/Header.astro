@@ -29,10 +29,17 @@ const navigation = [
 			</span>
 			<Button text="Contato" href="#contato" variant="header" iconSrc={arrowIconSrc} />
 		</div>
+		<button class="site-header__menu" type="button">
+			<span class="site-header__menu-surface">
+				<span>Menu</span>
+				<span class="site-header__menu-icon" aria-hidden="true"></span>
+			</span>
+		</button>
 	</div>
 </header>
 
 <style>
+	.site-header__menu { display: none; }
 	.site-header {
 		position: sticky;
 		top: 0;
@@ -151,6 +158,64 @@ const navigation = [
 		.site-header__logo { inline-size: 60px; }
 		.site-header__logo img { width: 60px; max-height: 39px; }
 		.site-header__nav { display: block; }
+	}
+	@media (max-width: 899px) {
+		.site-header__inner {
+			grid-template-columns: minmax(0, 1fr) auto;
+			padding-inline: var(--layout-gutter-mobile);
+			gap: var(--layout-grid-gap-mobile);
+		}
+		.site-header__logo { inline-size: 43px; block-size: 28px; }
+		.site-header__logo img {
+			inline-size: auto;
+			block-size: 28px;
+			max-block-size: none;
+			margin-inline: auto;
+		}
+		.site-header__nav, .site-header__actions { display: none; }
+		.site-header__menu {
+			display: flex;
+			align-items: center;
+			justify-self: end;
+			inline-size: 99px;
+			block-size: 44px;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			color: var(--color-button-light-text);
+			font-family: var(--font-family-base);
+			font-size: var(--font-size-16);
+			font-weight: var(--font-weight-bold);
+			line-height: var(--line-height-24);
+			cursor: pointer;
+		}
+		.site-header__menu-surface {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: var(--space-8);
+			inline-size: 100%;
+			block-size: 40px;
+			border-radius: var(--radius-full);
+			background: var(--color-button-light-bg);
+		}
+		.site-header__menu-icon {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-4);
+			inline-size: 14px;
+		}
+		.site-header__menu-icon::before, .site-header__menu-icon::after {
+			content: '';
+			block-size: 2px;
+			border-radius: var(--radius-full);
+			background: currentColor;
+		}
+		.site-header__menu:focus-visible {
+			outline: var(--border-width-2) solid var(--color-text-primary);
+			outline-offset: var(--space-4);
+			border-radius: var(--radius-full);
+		}
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.availability__dot {

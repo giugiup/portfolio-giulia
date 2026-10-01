@@ -39,7 +39,7 @@ const firstProject = initialProjects[activeIndex];
         </div>
       </div>}
       <div class="projects__visual-column">
-      <ol class="projects__list" role="list">
+      <ol class="projects__list projects__initial" role="list">
         {initialProjects.map((project, index) => <li>
           <div class="projects__compact-info"><ProjectInfo {...project} compact /></div>
           <ProjectCover {...project} index={index} />
@@ -83,6 +83,15 @@ const firstProject = initialProjects[activeIndex];
     const more = section.querySelector<HTMLButtonElement>('.projects__more')!;
     const announcement = section.querySelector<HTMLElement>('[data-projects-announcement]')!;
     let expanded = false;
+    const mobile = window.matchMedia('(max-width: 899px)');
+    const previewItem = cards[initialCount - 1]?.closest('li');
+    const updateMobileState = () => {
+      section!.dataset.expanded = String(expanded);
+      if (previewItem) previewItem.inert = mobile.matches && !expanded;
+      more.querySelector('span')!.textContent = expanded ? 'Ver menos' : mobile.matches ? 'Ver mais projetos' : 'Ver mais';
+    };
+    mobile.addEventListener('change', updateMobileState);
+    updateMobileState();
     let isToggling = false;
     const visibleProjects = () => expanded ? cards : cards.slice(0, initialCount);
     let activeIndex = 0;
@@ -189,21 +198,21 @@ const firstProject = initialProjects[activeIndex];
       try {
         if (!expanded) {
           expanded = true;
+          updateMobileState();
           additional.hidden = false;
           indicators.forEach((indicator) => { indicator.hidden = false; });
           more.setAttribute('aria-expanded', 'true');
-          more.querySelector('span')!.textContent = 'Ver menos';
-          await Promise.all([animateAdditional(true), scrollToProject(initialCount)]);
+          await Promise.all([animateAdditional(true), scrollToProject(mobile.matches ? initialCount - 1 : initialCount)]);
           announcement.textContent = `Mais ${cards.length - initialCount} projetos exibidos.`;
         } else {
-          await scrollToProject(initialCount - 1);
+          await scrollToProject(mobile.matches ? initialCount - 2 : initialCount - 1);
           expanded = false;
           if (activeIndex >= initialCount) setActive(initialCount - 1);
           await animateAdditional(false);
           additional.hidden = true;
+          updateMobileState();
           indicators.forEach((indicator, index) => { indicator.hidden = index >= initialCount; });
           more.setAttribute('aria-expanded', 'false');
-          more.querySelector('span')!.textContent = 'Ver mais';
           announcement.textContent = 'Projetos adicionais ocultados.';
         }
       } finally {
@@ -298,5 +307,20 @@ const firstProject = initialProjects[activeIndex];
     .projects__compact-info { display: block; margin-block-end: var(--space-28); }
     .projects__list { gap: var(--space-64); }
     .projects__list.projects__additional { margin-block-start: var(--space-64); }
+  }
+  @media (max-width: 899px) {
+    .projects { --projects-mobile-card-height: 380px; --projects-radius: var(--certificate-radius); }
+    .projects__compact-info { display: none; }
+    .projects__list { gap: var(--space-16); }
+    .projects__list.projects__additional { margin-block-start: var(--space-16); }
+    .projects[data-expanded='false'] .projects__initial > li:nth-child(n + 3) { display: none; }
+    .projects__more-wrap { margin-block-start: var(--space-24); }
+    .projects__more {
+      border-color: transparent;
+      background: color-mix(in srgb, var(--color-sand-light) 5%, transparent);
+    }
+    .projects__more:hover { border-color: transparent; }
+    .projects__more:focus-visible { outline-width: 1px; outline-offset: 0; }
+    .projects__more svg { display: none; }
   }
 </style>

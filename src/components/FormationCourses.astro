@@ -1,0 +1,126 @@
+---
+import CertificateCard from './CertificateCard.astro';
+import { certificates } from '../data/education.js';
+import '../styles/formation.css';
+const qualifications = certificates.filter(({ type }) => type !== 'Curso livre');
+const courses = certificates.filter(({ type }) => type === 'Curso livre');
+---
+
+<div class="formation-compact">
+  <ul class="qualifications" aria-label="Formação acadêmica" role="list">
+    {qualifications.map((certificate) => <CertificateCard {...certificate} compact />)}
+  </ul>
+  <div class="courses-preview" id="formation-courses">
+    <ul class="courses-grid" aria-label="Cursos livres" role="list">
+      {courses.map((certificate) => <CertificateCard {...certificate} compact />)}
+      <li class="evolution-card">
+        <span class="evolution-icon"><img src="/icons/formation-evolution.svg" width="12" height="12" alt="" /></span>
+        <h3>Em constante evolução</h3>
+      </li>
+    </ul>
+  </div>
+  <button class="courses-toggle" type="button" aria-expanded="false" aria-controls="formation-courses" hidden>
+    <span>Ver mais</span>
+    <img src="/icons/formation-chevron.svg" width="16" height="16" alt="" />
+  </button>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('.formation-compact');
+  if (root) {
+    const preview = root.querySelector<HTMLElement>('.courses-preview')!;
+    const grid = root.querySelector<HTMLElement>('.courses-grid')!;
+    const button = root.querySelector<HTMLButtonElement>('.courses-toggle')!;
+    const label = button.querySelector('span')!;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let expanded = false;
+    let animation: Animation | undefined;
+    let scrollFrame = 0;
+    const previewHeight = () => Math.max(...Array.from(grid.children).slice(0, 2).map(card => card.getBoundingClientRect().height)) / 2;
+    const render = () => {
+      root.dataset.expanded = String(expanded);
+      button.setAttribute('aria-expanded', String(expanded));
+      label.textContent = expanded ? 'Ver menos' : 'Ver mais';
+      preview.setAttribute('aria-hidden', String(!expanded));
+      preview.inert = !expanded;
+      preview.style.height = `${expanded ? grid.offsetHeight : previewHeight()}px`;
+    };
+    button.hidden = false;
+    render();
+    new ResizeObserver(() => { if (!animation || animation.playState !== 'running') render(); }).observe(grid);
+    button.addEventListener('click', () => {
+      const start = preview.getBoundingClientRect().height;
+      animation?.cancel();
+      cancelAnimationFrame(scrollFrame);
+      expanded = !expanded;
+      const scrollStart = window.scrollY;
+      const scrollTarget = !expanded && preview.getBoundingClientRect().top < 96
+        ? Math.max(0, scrollStart + preview.getBoundingClientRect().top - 96) : scrollStart;
+      render();
+      if (!reduced.matches) {
+        animation = preview.animate([{ height: `${start}px` }, { height: preview.style.height }], {
+          duration: 400, easing: 'cubic-bezier(.22,1,.36,1)',
+        });
+        animation.onfinish = render;
+        if (scrollTarget !== scrollStart) {
+          const started = performance.now();
+          const followCollapse = (now: number) => {
+            const progress = Math.min((now - started) / 400, 1);
+            window.scrollTo({ top: scrollStart + (scrollTarget - scrollStart) * (1 - (1 - progress) ** 3), behavior: 'instant' });
+            if (progress < 1) scrollFrame = requestAnimationFrame(followCollapse);
+          };
+          scrollFrame = requestAnimationFrame(followCollapse);
+        }
+      } else if (scrollTarget !== scrollStart) {
+        window.scrollTo({ top: scrollTarget, behavior: 'instant' });
+      }
+    });
+    reduced.addEventListener('change', () => { animation?.cancel(); cancelAnimationFrame(scrollFrame); render(); });
+  }
+</script>
+
+<style>
+  .formation-compact { display: none; }
+  @media (max-width: 1439px) { .formation-compact { display: block; margin-top: var(--space-32); } }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-16); }
+  .qualifications { margin-bottom: var(--space-16); }
+  .courses-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .courses-preview { overflow: hidden; }
+  /* One mask reveals the actual page gradient rather than approximating its color. */
+  [data-expanded='false'] .courses-preview {
+    mask-image: linear-gradient(to bottom, #000 0%, #000 25%, transparent 100%);
+  }
+  [data-expanded='true'] .courses-grid { animation: courses-enter var(--formation-compact-duration) var(--formation-compact-easing); }
+  @keyframes courses-enter { from { opacity: .5; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .evolution-card {
+    min-width: 0;
+    min-height: 130px;
+    padding: var(--space-16);
+    border: 1px solid var(--formation-compact-border);
+    border-radius: var(--formation-compact-radius);
+    background: var(--formation-compact-background);
+    opacity: .5;
+  }
+  .evolution-icon { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: var(--radius-full); background: var(--formation-border); }
+  h3 { margin: var(--space-12) 0 0; font-size: var(--font-size-16); line-height: var(--line-height-20); font-weight: var(--font-weight-bold); }
+  .courses-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-8);
+    min-height: 44px;
+    margin: var(--space-8) auto 0;
+    padding: 10px var(--space-12);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-24);
+    cursor: pointer;
+  }
+  .courses-toggle[hidden] { display: none; }
+  .courses-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: var(--radius-8); }
+  [aria-expanded='true'] img { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) { [data-expanded='true'] .courses-grid { animation: none; } }
+</style>

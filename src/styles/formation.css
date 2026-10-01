@@ -1,0 +1,7 @@
+:root {
+  --formation-compact-radius: 24px;
+  --formation-compact-border: rgba(217, 185, 167, .22);
+  --formation-compact-background: rgba(217, 185, 167, .07);
+  --formation-compact-duration: 400ms;
+  --formation-compact-easing: cubic-bezier(.22, 1, .36, 1);
+}

@@ -1,0 +1,177 @@
+---
+import { experiences } from '../data/experience.js';
+---
+
+<ol class="experience-accordion" aria-label="Experiências profissionais" role="list">
+	{experiences.map((experience) => (
+		<li class="experience-accordion__entry">
+			<h3>
+				<button type="button" class="experience-accordion__trigger" id={`experience-accordion-trigger-${experience.id}`} aria-expanded="false" aria-controls={`experience-accordion-panel-${experience.id}`}>
+					<span class="experience-accordion__copy">
+						<span class="experience-accordion__role">{experience.displayTitle ?? experience.role}</span>
+						<span class="experience-accordion__meta">{experience.company} · {experience.period}</span>
+					</span>
+					<span class="experience-accordion__icon" aria-hidden="true"></span>
+				</button>
+			</h3>
+			<div class="experience-accordion__panel" id={`experience-accordion-panel-${experience.id}`} role="region" aria-labelledby={`experience-accordion-trigger-${experience.id}`} aria-hidden="true" inert>
+				<div class="experience-accordion__inner">
+					<div class="experience-accordion__content">
+						<p>{experience.description}</p>
+						{experience.skills?.length > 0 && (
+							<ul class="experience-accordion__skills" aria-label={`Habilidades — ${experience.company}`}>
+								{experience.skills.map((skill) => <li>{skill}</li>)}
+							</ul>
+						)}
+					</div>
+				</div>
+			</div>
+		</li>
+	))}
+</ol>
+
+<script>
+	const accordion = document.querySelector<HTMLOListElement>('.experience-accordion');
+	if (accordion) {
+		const compact = window.matchMedia('(width < 1280px)');
+		const buttons = [...accordion.querySelectorAll<HTMLButtonElement>('.experience-accordion__trigger')];
+		const panels = [...accordion.querySelectorAll<HTMLElement>('.experience-accordion__panel')];
+		let activeAccordionIndex: number | null = null;
+
+		function renderAccordion() {
+			buttons.forEach((button, index) => {
+				const open = index === activeAccordionIndex;
+				button.setAttribute('aria-expanded', String(open));
+				panels[index].setAttribute('aria-hidden', String(!open));
+				panels[index].inert = !open;
+			});
+		}
+
+		buttons.forEach((button, index) => button.addEventListener('click', () => {
+			if (!compact.matches) return;
+			activeAccordionIndex = activeAccordionIndex === index ? null : index;
+			renderAccordion();
+		}));
+		compact.addEventListener('change', () => {
+			activeAccordionIndex = null;
+			renderAccordion();
+		});
+	}
+</script>
+
+<style>
+	.experience-accordion {
+		display: none;
+		min-inline-size: 0;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	@media (width < 1280px) {
+		.experience-accordion { display: block; }
+	}
+	.experience-accordion__entry:not(:last-child) {
+		border-block-end: var(--border-width-1) solid var(--experience-control-border);
+	}
+	h3, p { margin: 0; }
+	.experience-accordion__trigger {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-16);
+		inline-size: 100%;
+		min-block-size: 90px;
+		padding: var(--space-16) 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		text-align: start;
+		cursor: pointer;
+	}
+	.experience-accordion__trigger:focus-visible {
+		outline: var(--border-width-2) solid var(--color-text-primary);
+		outline-offset: var(--space-4);
+	}
+	.experience-accordion__copy {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-8);
+		min-inline-size: 0;
+		overflow-wrap: anywhere;
+	}
+	.experience-accordion__role {
+		font-size: var(--font-size-22);
+		font-weight: var(--font-weight-light);
+		line-height: var(--line-height-28);
+	}
+	.experience-accordion__meta {
+		font-size: var(--font-size-12);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-18);
+		opacity: .72;
+	}
+	.experience-accordion__icon {
+		position: relative;
+		flex: 0 0 28px;
+		inline-size: 28px;
+		block-size: 28px;
+		border: var(--border-width-1) solid var(--experience-control-border);
+		border-radius: 50%;
+		background: transparent;
+		color: var(--color-sand-light);
+	}
+	.experience-accordion__icon::before,
+	.experience-accordion__icon::after {
+		content: '';
+		position: absolute;
+		inset: 12.5px 9px auto;
+		block-size: 1px;
+		border-radius: var(--radius-full);
+		background: currentColor;
+	}
+	.experience-accordion__icon::after { transform: rotate(90deg); }
+	[aria-expanded='true'] .experience-accordion__icon::after { opacity: 0; }
+	.experience-accordion__panel {
+		display: grid;
+		grid-template-rows: 0fr;
+		opacity: 0;
+		visibility: hidden;
+		transition: grid-template-rows 300ms cubic-bezier(.22,1,.36,1),
+			opacity 300ms cubic-bezier(.22,1,.36,1), visibility 0s 300ms;
+	}
+	.experience-accordion__panel[aria-hidden='false'] {
+		grid-template-rows: 1fr;
+		opacity: 1;
+		visibility: visible;
+		transition-delay: 0s;
+	}
+	.experience-accordion__inner { min-block-size: 0; overflow: hidden; }
+	.experience-accordion__content {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-16);
+		padding-block-end: var(--space-24);
+		font-size: var(--font-size-14);
+		line-height: var(--line-height-22);
+		overflow-wrap: anywhere;
+	}
+	.experience-accordion__content p { opacity: .8; }
+	.experience-accordion__skills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-8);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.experience-accordion__skills li {
+		padding: 7px 10px;
+		border: var(--border-width-1) solid var(--experience-control-border);
+		border-radius: var(--radius-full);
+		font-size: var(--font-size-11);
+		line-height: var(--line-height-16);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.experience-accordion__panel { transition: none; }
+	}
+</style>

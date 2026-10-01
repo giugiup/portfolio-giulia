@@ -14,10 +14,10 @@ const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 			{logoSrc && <HeroLogo />}
 		</div>
 		<h1 id="hero-title">
-			<span>Projetos que conectam</span>
-			<span>visual, interface e experiência.</span>
+			<span>Interfaces claras, funcionais </span>
+			<span>e com personalidade.</span>
 		</h1>
-		<p class="hero__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet dui nec odio tempor tempor ut sed purus. Morbi tempus justo eu bibendum convallis.</p>
+		<p class="hero__description">Minha base em comunicação visual encontra o UX/UI para criar sites e experiências digitais com clareza, repertório visual e intenção.</p>
 		<Button text="Entre em contato" href={contactHref} variant="hero" iconSrc={arrowIconSrc} disabled={!contactHref} />
 	</div>
 	<div class="hero__scroll-hint">
@@ -123,5 +123,34 @@ const { contactHref, logoSrc, arrowIconSrc } = Astro.props;
 	}
 	@media (min-width: 1280px) {
 		.hero h1 { line-height: var(--line-height-64); }
+	}
+	@media (max-width: 899px) {
+		.hero__content {
+			gap: var(--space-24);
+			padding: var(--space-72) var(--layout-gutter-mobile) var(--space-80);
+		}
+		.hero__logo { inline-size: 116px; block-size: 76px; }
+		.hero h1 {
+			inline-size: 100%;
+			max-inline-size: var(--hero-copy-width-mobile);
+			font-size: var(--hero-title-size-mobile);
+			line-height: var(--hero-title-leading-mobile);
+		}
+		.hero h1 span { display: inline; }
+		.hero__description {
+			inline-size: 100%;
+			max-inline-size: var(--hero-copy-width-mobile);
+			font-size: var(--font-size-16);
+			line-height: 1.5;
+		}
+		.hero :global(.button--hero) {
+			inline-size: 218px;
+			min-block-size: 52px;
+			padding: 14px var(--space-24);
+			gap: 10px;
+			font-size: var(--font-size-16);
+			line-height: var(--line-height-24);
+		}
+		.hero__scroll-hint { display: none; }
 	}
 </style>

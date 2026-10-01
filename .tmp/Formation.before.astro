@@ -1,6 +1,5 @@
 ---
 import CertificateCard from './CertificateCard.astro';
-import FormationCourses from './FormationCourses.astro';
 import { certificates } from '../data/education.js';
 ---
 
@@ -14,7 +13,6 @@ import { certificates } from '../data/education.js';
       {certificates.map((certificate) => <CertificateCard {...certificate} />)}
     </ul>
     <p class="formation-hint">• Pegue, arraste e solte os cards.</p>
-    <FormationCourses />
   </div>
 </section>
 
@@ -171,12 +169,17 @@ import { certificates } from '../data/education.js';
   @media (min-width: 1280px) {
     .formation { padding-bottom: var(--space-96); }
   }
-  /* Apresentação compacta; desktop mantém seus cards e interação originais. */
+  /* Fallback simples até o handoff mobile; posições aprovadas em desktop. */
   @media (max-width: 1439px) {
-    .formation { padding: var(--space-64) var(--space-24); }
-    .certificates-surface { height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; overflow: visible; }
+    .formation { padding-inline: clamp(16px, 5.5556vw, 80px); }
+    .certificates-surface { height: auto; padding: clamp(16px, 3vw, 40px); }
     .formation-intro { position: static; width: min(560px, 100%); }
-    .formation-intro h2 { font-size: var(--font-size-heading-large); line-height: var(--line-height-38); }
-    .certificates-list, .formation-hint { display: none; }
+    .certificates-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(286px, 100%), 1fr));
+      gap: var(--space-24);
+      margin-block: var(--space-40);
+    }
+    .formation-hint { position: static; }
   }
 </style>

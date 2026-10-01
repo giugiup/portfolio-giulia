@@ -6,22 +6,20 @@ interface Props {
   institution: string;
   year: string;
   featured?: boolean;
-  compact?: boolean;
   position: { left: number; top: number; rotation: number };
 }
-const { id, type, course, institution, year, featured = false, compact = false, position } = Astro.props;
-const titleId = `certificate-${compact ? 'compact-' : ''}${id}`;
+const { id, type, course, institution, year, featured = false, position } = Astro.props;
 ---
 
-<li class:list={['certificate-position', { 'is-featured': featured, 'is-compact': compact }]}
-  data-certificate-draggable={!compact || undefined}
-  data-cursor={compact ? undefined : 'move'}
+<li class:list={['certificate-position', { 'is-featured': featured }]}
+  data-certificate-draggable
+  data-cursor="move"
   style={`--certificate-left: ${position.left}px; --certificate-top: ${position.top}px; --certificate-rotation: ${position.rotation}deg;`}>
   <div class="certificate-motion">
     <div class="certificate-idle">
-    <article class="certificate-card" aria-labelledby={titleId}>
+    <article class="certificate-card" aria-labelledby={`certificate-${id}`}>
       <span class="certificate-tag">{type}</span>
-      <h3 id={titleId}>{course}</h3>
+      <h3 id={`certificate-${id}`}>{course}</h3>
       <div class="certificate-meta">
         <span class="certificate-institution">{institution}</span>
         <span class="certificate-year">{year}</span>
@@ -158,54 +156,4 @@ const titleId = `certificate-${compact ? 'compact-' : ''}${id}`;
     .certificate-idle { animation: none; transform: none; }
     .certificate-motion, .certificate-card { transition: none; }
   }
-  .certificate-position.is-compact {
-    position: static;
-    width: 100%;
-    min-width: 0;
-    transform: none;
-  }
-  .is-compact .certificate-motion, .is-compact .certificate-idle {
-    transform: none;
-    animation: none;
-  }
-  .is-compact .certificate-card {
-    height: 100%;
-    min-height: 130px;
-    padding: var(--space-16);
-    border-radius: var(--formation-compact-radius);
-    border-color: var(--formation-compact-border);
-    background: var(--formation-compact-background);
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    gap: 6px;
-    justify-content: flex-start;
-  }
-  .is-compact .certificate-motion, .is-compact .certificate-idle { height: 100%; }
-  .is-compact.is-featured .certificate-card { min-height: 110px; }
-  .is-compact .certificate-tag {
-    padding: 3px 10px;
-    margin-bottom: 6px;
-    border: 0;
-    background: var(--formation-border);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-11);
-    font-weight: var(--font-weight-bold);
-    line-height: var(--line-height-16);
-  }
-  .is-compact h3 {
-    font-size: var(--font-size-16);
-    line-height: var(--line-height-20);
-    font-weight: var(--font-weight-bold);
-    overflow-wrap: anywhere;
-  }
-  .is-compact .certificate-meta {
-    display: block;
-    padding: 0;
-    border: 0;
-    font-size: var(--font-size-11);
-    line-height: var(--line-height-16);
-  }
-  .is-compact .certificate-meta span { opacity: .64; }
-  .is-compact .certificate-year::before { content: ' · '; }
 </style>
