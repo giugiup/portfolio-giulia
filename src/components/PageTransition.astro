@@ -32,24 +32,38 @@ const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
     const easing = 'cubic-bezier(.22,1,.36,1)';
     // All times are milliseconds from the same document timeline origin.
     const timeline = {
-      enter: 250, g: 700,
-      iStart: 600, iDuration: 450,
-      uStart: 1050, uDuration: 550,
-      logoColorDuration: 250,
-      fadeStart: 1750, fadeDuration: 250,
-      sandHold: 200, returnDuration: 600,
+      enter: 120, g: 300,
+      iStart: 300, iDuration: 300,
+      uStart: 600, uDuration: 300,
+      logoColorDuration: 300,
+      fadeStart: 1100, fadeDuration: 300,
+      sandHold: 350, returnDuration: 250,
     };
     type ProjectDetail = { url?: string; slug?: string };
     let isTransitioning = false;
     let animations: Animation[] = [];
+    // Capture authored state once, including SVG display and fills. Restoring it
+    // leaves responsive sizing and reduced-motion visibility under CSS control.
+    const initialState = [overlay, logo, ...logo.querySelectorAll('svg, g, path')].map((element) => ({
+      element,
+      style: element.getAttribute('style'),
+      classes: element.getAttribute('class'),
+    }));
 
     function resetTransition() {
       // Hide first: cancelling fill effects restores the original SVG and CSS
       // (including light fill, transforms, opacity and background) off-screen.
       overlay!.removeAttribute('data-active');
       delete overlay!.dataset.stage;
-      animations.forEach((animation) => animation.cancel());
+      const remaining = new Set([...animations, ...overlay!.getAnimations({ subtree: true })]);
+      remaining.forEach((animation) => animation.cancel());
       animations = [];
+      initialState.forEach(({ element, style, classes }) => {
+        if (style === null) element.removeAttribute('style');
+        else element.setAttribute('style', style);
+        if (classes === null) element.removeAttribute('class');
+        else element.setAttribute('class', classes);
+      });
       status!.textContent = '';
       root.removeAttribute('data-project-transition-active');
       isTransitioning = false;
@@ -96,6 +110,8 @@ const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
         const readyAt = t.fadeStart + t.fadeDuration;
         const origin = document.timeline.currentTime;
         const animate = (element: Element, frames: Keyframe[], duration: number, delay = 0) => {
+          // A fresh Animation with explicit initial keyframes restarts every run;
+          // no CSS class toggles, reflow tricks or timeout-based restart needed.
           const animation = element.animate(frames, { duration, delay, easing, fill: 'both' });
           animation.startTime = origin;
           animations.push(animation);

@@ -14,7 +14,7 @@ import LogoCarousel from './LogoCarousel.astro';
 			</figcaption>
 		</figure>
 		<div class="about__content">
-			<h2 id="about-title">Entre o visual e o funcional, eu prefiro os dois.</h2>
+			<h2 id="about-title"><span class="about__title-line">Entre o visual</span> <span class="about__title-line">e o funcional,</span> <span class="about__title-line">eu prefiro os dois.</span></h2>
 			<p class="about__description">Minha trajetória passa por branding, social media, web design e UX/UI. Hoje, desenvolvo sites, landing pages e experiências digitais pensando em usabilidade, hierarquia, responsividade, prototipação e direção visual. Gosto de unir raciocínio de produto ao repertório criativo para construir soluções que façam sentido para quem usa e, ao mesmo tempo, tenham identidade.</p>
 			<div class="about__logos"><LogoCarousel /></div>
 		</div>
@@ -110,6 +110,12 @@ import LogoCarousel from './LogoCarousel.astro';
 		font-weight: var(--font-weight-extra-bold);
 		line-height: var(--line-height-38);
 		overflow-wrap: break-word;
+	}
+	@media (width < 768px) {
+		.about__title-line {
+			display: block;
+			white-space: nowrap;
+		}
 	}
 	.about__description {
 		inline-size: 690px;

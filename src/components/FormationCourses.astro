@@ -85,6 +85,11 @@ const courses = certificates.filter(({ type }) => type === 'Curso livre');
   ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-16); }
   .qualifications { margin-bottom: var(--space-16); }
   .courses-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 899px) {
+    .courses-grid :global(.certificate-meta) {
+      margin-top: auto;
+    }
+  }
   .courses-preview { overflow: hidden; }
   /* One mask reveals the actual page gradient rather than approximating its color. */
   [data-expanded='false'] .courses-preview {

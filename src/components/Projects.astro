@@ -191,6 +191,63 @@ const firstProject = initialProjects[activeIndex];
       }
     }
 
+    async function collapseMobile() {
+      const initial = section!.querySelector<HTMLOListElement>('.projects__initial')!;
+      const extraItems = [previewItem, ...additional.children].filter((item): item is HTMLElement => item instanceof HTMLElement);
+      const timing = { duration: 500, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' as FillMode };
+      const animations: Animation[] = [];
+      let anchorFrame = 0;
+      const cancel = () => animations.forEach((animation) => animation.cancel());
+      const wait = async () => {
+        try { await Promise.all(animations.map((animation) => animation.finished)); }
+        catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) throw error; }
+      };
+      section!.dataset.collapsing = 'true';
+      reducedMotion.addEventListener('change', cancel);
+      mobile.addEventListener('change', cancel);
+      try {
+        if (!reducedMotion.matches) {
+          // Keep every extra card in flow until the last exit finishes.
+          extraItems.forEach((item, index) => animations.push(item.animate([
+            { opacity: 1, transform: 'translateY(0)' },
+            { opacity: 0, transform: 'translateY(24px)' },
+          ], { ...timing, delay: (extraItems.length - 1 - index) * 75 })));
+          await wait();
+        }
+        if (!reducedMotion.matches && mobile.matches) {
+          const lastRetained = initial.children[initialCount - 2];
+          const retainedHeight = lastRetained.getBoundingClientRect().bottom - initial.getBoundingClientRect().top;
+          const buttonTop = more.getBoundingClientRect().top;
+          const keepButtonInView = buttonTop >= 0 && buttonTop < window.innerHeight;
+          // Compensate only for removed space, keeping the visible button anchored.
+          const preserveViewport = () => {
+            if (keepButtonInView) window.scrollBy({ top: more.getBoundingClientRect().top - buttonTop, behavior: 'instant' });
+            anchorFrame = requestAnimationFrame(preserveViewport);
+          };
+          animations.push(initial.animate([
+            { height: `${initial.getBoundingClientRect().height}px` },
+            { height: `${retainedHeight}px` },
+          ], timing));
+          animations.push(additional.animate([
+            { height: `${additional.getBoundingClientRect().height}px`, marginTop: getComputedStyle(additional).marginTop },
+            { height: '0px', marginTop: '0px' },
+          ], timing));
+          anchorFrame = requestAnimationFrame(preserveViewport);
+          await wait();
+        }
+      } finally {
+        cancelAnimationFrame(anchorFrame);
+        // Commit the collapsed layout before releasing the invisible exit frames.
+        expanded = false;
+        additional.hidden = true;
+        updateMobileState();
+        cancel();
+        delete section!.dataset.collapsing;
+        reducedMotion.removeEventListener('change', cancel);
+        mobile.removeEventListener('change', cancel);
+      }
+    }
+
     more.addEventListener('click', async () => {
       if (isToggling) return;
       isToggling = true;
@@ -205,10 +262,15 @@ const firstProject = initialProjects[activeIndex];
           await Promise.all([animateAdditional(true), scrollToProject(mobile.matches ? initialCount - 1 : initialCount)]);
           announcement.textContent = `Mais ${cards.length - initialCount} projetos exibidos.`;
         } else {
-          await scrollToProject(mobile.matches ? initialCount - 2 : initialCount - 1);
-          expanded = false;
+          if (mobile.matches) {
+            await collapseMobile();
+          } else {
+            await scrollToProject(initialCount - 1);
+            expanded = false;
+            if (activeIndex >= initialCount) setActive(initialCount - 1);
+            await animateAdditional(false);
+          }
           if (activeIndex >= initialCount) setActive(initialCount - 1);
-          await animateAdditional(false);
           additional.hidden = true;
           updateMobileState();
           indicators.forEach((indicator, index) => { indicator.hidden = index >= initialCount; });
@@ -309,6 +371,8 @@ const firstProject = initialProjects[activeIndex];
     .projects__list.projects__additional { margin-block-start: var(--space-64); }
   }
   @media (max-width: 899px) {
+    .projects[data-collapsing='true'] { overflow-anchor: none; }
+    .projects[data-collapsing='true'] .projects__list { overflow: clip; }
     .projects { --projects-mobile-card-height: 380px; --projects-radius: var(--certificate-radius); }
     .projects__compact-info { display: none; }
     .projects__list { gap: var(--space-16); }

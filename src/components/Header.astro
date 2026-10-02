@@ -2,6 +2,7 @@
 import Button from './Button.astro';
 
 const { logoSrc, arrowIconSrc } = Astro.props;
+const contactNavigation = { text: 'Contato', href: '#contato' };
 const navigation = [
 	{ text: 'Projetos', href: '#projetos' },
 	{ text: 'Sobre mim', href: '#sobre' },
@@ -27,18 +28,137 @@ const navigation = [
 				<span class="availability__dot" aria-hidden="true"></span>
 				Disponível para novos projetos
 			</span>
-			<Button text="Contato" href="#contato" variant="header" iconSrc={arrowIconSrc} />
+			<Button {...contactNavigation} variant="header" iconSrc={arrowIconSrc} />
 		</div>
-		<button class="site-header__menu" type="button">
+		<button class="site-header__menu" type="button" aria-expanded="false" aria-controls="mobile-navigation">
 			<span class="site-header__menu-surface">
 				<span>Menu</span>
-				<span class="site-header__menu-icon" aria-hidden="true"></span>
+				<span class="site-header__menu-icon" aria-hidden="true">
+					{Array.from({ length: 9 }, () => <span></span>)}
+				</span>
 			</span>
 		</button>
 	</div>
 </header>
+<div class="mobile-menu" hidden inert>
+	<nav id="mobile-navigation" aria-label="Navegação mobile">
+		<ul>
+			{[...navigation, contactNavigation].map(({ text, href }, index) => (
+				<li style={`--menu-index: ${index}; --menu-reverse-index: ${navigation.length - index}`}><a href={href}>{text}</a></li>
+			))}
+		</ul>
+	</nav>
+</div>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>('.site-header__menu');
+	const menu = document.querySelector<HTMLElement>('.mobile-menu');
+	const header = document.querySelector<HTMLElement>('.site-header');
+	if (button && menu && header) {
+		const compact = matchMedia('(max-width: 899px)');
+		const root = document.documentElement;
+		const links = [...menu.querySelectorAll<HTMLAnchorElement>('a')];
+		let isMenuOpen = false;
+		let revision = 0;
+		let restorePage: (() => void) | undefined;
+		const settle = async () => {
+			// Resolve the actual CSS transitions, including stagger, without timers.
+			getComputedStyle(menu).opacity;
+			await Promise.allSettled(menu.getAnimations({ subtree: true }).map(animation => animation.finished));
+		};
+		async function setMenuOpen(open: boolean, destination?: string) {
+			if (open === isMenuOpen || (open && !compact.matches)) return;
+			isMenuOpen = open;
+			const current = ++revision;
+			button!.setAttribute('aria-expanded', String(open));
+			if (open) {
+				if (!restorePage) {
+					const x = scrollX, y = scrollY;
+					const overflow = root.style.overflow;
+					const main = document.querySelector('main');
+					const wasInert = main?.inert ?? false;
+					root.style.overflow = 'hidden';
+					if (main) main.inert = true;
+					restorePage = () => {
+						root.style.overflow = overflow;
+						if (main) main.inert = wasInert;
+						window.scrollTo({ left: x, top: y, behavior: 'instant' });
+					};
+				}
+				menu!.hidden = false;
+				menu!.inert = false;
+				getComputedStyle(menu!).opacity;
+				menu!.classList.add('is-open');
+				// Keep focus on the toggle; Tab enters the navigation.
+				button!.focus({ preventScroll: true });
+			} else {
+				menu!.inert = true;
+				menu!.classList.remove('is-open');
+				if (compact.matches) button!.focus({ preventScroll: true });
+				await settle();
+				if (current !== revision) return;
+				menu!.hidden = true;
+				restorePage?.();
+				restorePage = undefined;
+				if (destination) {
+					const target = document.querySelector<HTMLElement>(destination);
+					if (target) {
+						history.pushState(null, '', destination);
+						target.scrollIntoView();
+					}
+				}
+			}
+		}
+		button.addEventListener('click', () => void setMenuOpen(!isMenuOpen));
+		menu.addEventListener('click', event => {
+			const link = (event.target as Element).closest<HTMLAnchorElement>('a');
+			if (link) { event.preventDefault(); void setMenuOpen(false, link.hash); }
+			else void setMenuOpen(false);
+		});
+		document.addEventListener('keydown', event => {
+			if (!isMenuOpen) return;
+			if (event.key === 'Escape') { event.preventDefault(); void setMenuOpen(false); }
+			if (event.key === 'Tab') {
+				const focusable = [...header!.querySelectorAll<HTMLElement>('a, button'), ...links].filter(element => element.getClientRects().length);
+				const index = focusable.indexOf(document.activeElement as HTMLElement);
+				const next = (index + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+				event.preventDefault(); focusable[next].focus({ preventScroll: true });
+			}
+		});
+		compact.addEventListener('change', () => { if (!compact.matches) void setMenuOpen(false); });
+	}
+</script>
 
 <style>
+	/* Page < mobile overlay (999) < existing header (1000) < PageTransition. */
+	.mobile-menu { display: none; }
+	@media (max-width: 899px) {
+		.mobile-menu {
+			position: fixed; inset: 0; z-index: 999; display: block;
+			overflow-y: auto; overscroll-behavior: contain;
+			padding: calc(var(--nav-height) + 56px) 24px 32px;
+			background: rgba(13, 3, 5, .55);
+			-webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+			opacity: 0; transition: opacity 250ms ease 500ms;
+		}
+		.mobile-menu[hidden] { display: none; }
+		.mobile-menu.is-open { opacity: 1; transition-delay: 0ms; }
+		.mobile-menu ul { display: flex; flex-direction: column; gap: 18px; margin: 0; padding: 0; list-style: none; }
+		.mobile-menu li {
+			opacity: 0; transform: translateY(12px);
+			transition: opacity 350ms cubic-bezier(.22,1,.36,1), transform 350ms cubic-bezier(.22,1,.36,1);
+			transition-delay: calc(var(--menu-reverse-index) * 40ms);
+		}
+		.mobile-menu.is-open li { opacity: 1; transform: translateY(0); transition-delay: calc(80ms + var(--menu-index) * 50ms); }
+		.mobile-menu a { color: var(--color-sand-light); font-size: 30px; line-height: 1.2; font-weight: 500; text-decoration: none; }
+		.mobile-menu a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+		.site-header__menu-icon > span { transition: transform 300ms cubic-bezier(.22,1,.36,1), opacity 300ms cubic-bezier(.22,1,.36,1); }
+		.site-header__menu[aria-expanded='true'] .site-header__menu-icon > span:nth-child(even) { transform: scale(0); opacity: 0; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.mobile-menu, .mobile-menu li, .mobile-menu.is-open li, .site-header__menu-icon > span { transition-duration: 1ms; transition-delay: 0ms; }
+		.mobile-menu li { transform: none; }
+	}
 	.site-header__menu { display: none; }
 	.site-header {
 		position: sticky;
@@ -161,22 +281,23 @@ const navigation = [
 	}
 	@media (max-width: 899px) {
 		.site-header__inner {
-			grid-template-columns: minmax(0, 1fr) auto;
+			display: flex;
+			justify-content: space-between;
 			padding-inline: var(--layout-gutter-mobile);
 			gap: var(--layout-grid-gap-mobile);
 		}
-		.site-header__logo { inline-size: 43px; block-size: 28px; }
+		.site-header__logo { flex-basis: 47.3px; inline-size: 47.3px; block-size: 30.8px; }
 		.site-header__logo img {
 			inline-size: auto;
-			block-size: 28px;
+			block-size: 30.8px;
 			max-block-size: none;
 			margin-inline: auto;
 		}
 		.site-header__nav, .site-header__actions { display: none; }
 		.site-header__menu {
-			display: flex;
+			display: inline-flex;
 			align-items: center;
-			justify-self: end;
+			flex-shrink: 0;
 			inline-size: 99px;
 			block-size: 44px;
 			padding: 0;
@@ -195,22 +316,27 @@ const navigation = [
 			justify-content: center;
 			gap: var(--space-8);
 			inline-size: 100%;
-			block-size: 40px;
+			block-size: 36px;
 			border-radius: var(--radius-full);
 			background: var(--color-button-light-bg);
 		}
 		.site-header__menu-icon {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-4);
+			display: grid;
+			grid-template-columns: repeat(3, 2.5px);
+			gap: 3px;
+			justify-content: center;
+			align-content: center;
+			flex: 0 0 14px;
 			inline-size: 14px;
+			block-size: 14px;
 		}
-		.site-header__menu-icon::before, .site-header__menu-icon::after {
-			content: '';
-			block-size: 2px;
+		.site-header__menu-icon > span {
+			inline-size: 2.5px;
+			block-size: 2.5px;
 			border-radius: var(--radius-full);
 			background: currentColor;
 		}
+		.site-header__menu:active { opacity: 0.8; }
 		.site-header__menu:focus-visible {
 			outline: var(--border-width-2) solid var(--color-text-primary);
 			outline-offset: var(--space-4);
