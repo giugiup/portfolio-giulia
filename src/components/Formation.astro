@@ -7,8 +7,8 @@ import { certificates } from '../data/education.js';
 <section id="formacao" class="formation" aria-labelledby="formation-title">
   <div class="certificates-surface">
     <div class="formation-intro">
-      <h2 id="formation-title">Aprender faz parte do meu processo.</h2>
-      <p class="formation-subtitle">As formas de criar estão sempre mudando — e eu gosto de continuar aprendendo junto com elas.</p>
+      <h2 id="formation-title">Aprender faz parte<br class="formation-title-break" /> do meu processo.</h2>
+      <p class="formation-subtitle"><span class="formation-subtitle-mobile">As formas de criar estão sempre mudando — e eu gosto de continuar aprendendo junto com elas.</span><span class="formation-subtitle-desktop">As formas de criar estão sempre mudando,<br />e eu gosto de continuar aprendendo junto com elas.</span></p>
     </div>
     <ul class="certificates-list" aria-label="Cursos e formações">
       {certificates.map((certificate) => <CertificateCard {...certificate} />)}
@@ -152,6 +152,13 @@ import { certificates } from '../data/education.js';
     font-size: var(--font-size-40);
     line-height: var(--line-height-48);
     font-weight: var(--font-weight-extra-bold);
+  }
+  .formation-title-break { display: none; }
+  .formation-subtitle-desktop { display: none; }
+  @media (min-width: 1440px) {
+    .formation-title-break { display: block; }
+    .formation-subtitle-mobile { display: none; }
+    .formation-subtitle-desktop { display: inline; }
   }
   .formation-subtitle {
     font-size: var(--font-size-17);

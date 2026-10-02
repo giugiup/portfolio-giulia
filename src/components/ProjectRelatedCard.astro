@@ -1,0 +1,11 @@
+---
+import ProjectMedia from './ProjectMedia.astro';
+interface Props { title: string; year: string; href: string; tone?: 'thumbnail' | 'sand' | 'dark'; }
+const { title, year, href, tone = 'thumbnail' } = Astro.props;
+---
+<li class="project-related-card">
+  <a href={href} aria-label={`Ver projeto: ${title}`} data-cursor="project">
+  <ProjectMedia tone={tone} format="thumbnail" caption={false} rounded="small" />
+  <div class="project-related-card__caption"><h3>{title}</h3><span>{year}</span></div>
+  </a>
+</li>

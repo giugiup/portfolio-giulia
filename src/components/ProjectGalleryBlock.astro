@@ -1,0 +1,10 @@
+---
+import ProjectMedia from './ProjectMedia.astro';
+const { block } = Astro.props;
+---
+{block.layout === 'group' ? <div class="project-gallery__group">
+  {block.items.map(item => <Astro.self block={item} />)}
+</div> : block.layout === 'split' ? <div class="project-gallery__pair">
+  {block.items.map(item => <ProjectMedia {...item} format="portrait" />)}
+</div> : block.layout === 'text' ? <div class="project-narrative"><p>{block.content}</p></div>
+: <ProjectMedia {...block} />}

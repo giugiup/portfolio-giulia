@@ -1,21 +1,23 @@
 ---
 import Button from './Button.astro';
 
-const { logoSrc, arrowIconSrc } = Astro.props;
-const contactNavigation = { text: 'Contato', href: '#contato' };
+const { logoSrc, arrowIconSrc, variant = 'default' } = Astro.props;
+const isProject = variant === 'project-light';
+const contactNavigation = { text: 'Contato', href: `${isProject ? '/' : ''}#contato` };
 const navigation = [
 	{ text: 'Projetos', href: '#projetos' },
 	{ text: 'Sobre mim', href: '#sobre' },
 	{ text: 'Experiência', href: '#experiencia' },
 	{ text: 'Formação', href: '#formacao' },
-];
+].map(item => ({ ...item, href: `${isProject ? '/' : ''}${item.href}` }));
 ---
 
-<header class="site-header">
+<header class:list={['site-header', { 'site-header--project-light': isProject }]}>
 	<div class="site-header__inner">
 		{logoSrc ? (
 			<a class="site-header__logo" href="/" aria-label="Página inicial">
-				<img src={logoSrc} alt="Giulia" width="78.4651" height="59" />
+				<img src={logoSrc} alt="Giulia" width={isProject ? 55.1844 : 78.4651} height={isProject ? 41.4945 : 59} />
+				{isProject && <img class="site-header__logo-scrolled" src="/images/giulia-logo-header.svg" alt="" aria-hidden="true" width="78.4651" height="59" />}
 			</a>
 		) : <div class="site-header__logo" aria-hidden="true"></div>}
 		<nav class="site-header__nav" aria-label="Navegação principal">
@@ -30,17 +32,17 @@ const navigation = [
 			</span>
 			<Button {...contactNavigation} variant="header" iconSrc={arrowIconSrc} />
 		</div>
-		<button class="site-header__menu" type="button" aria-expanded="false" aria-controls="mobile-navigation">
+		{!isProject && <button class="site-header__menu" type="button" aria-expanded="false" aria-controls="mobile-navigation">
 			<span class="site-header__menu-surface">
 				<span>Menu</span>
 				<span class="site-header__menu-icon" aria-hidden="true">
 					{Array.from({ length: 9 }, () => <span></span>)}
 				</span>
 			</span>
-		</button>
+		</button>}
 	</div>
 </header>
-<div class="mobile-menu" hidden inert>
+{!isProject && <div class="mobile-menu" hidden inert>
 	<nav id="mobile-navigation" aria-label="Navegação mobile">
 		<ul>
 			{[...navigation, contactNavigation].map(({ text, href }, index) => (
@@ -48,9 +50,16 @@ const navigation = [
 			))}
 		</ul>
 	</nav>
-</div>
+</div>}
 
 <script>
+	const projectHeader = document.querySelector<HTMLElement>('.site-header--project-light');
+	if (projectHeader) {
+		const updateProjectHeader = () => projectHeader.classList.toggle('is-scrolled', window.scrollY > 4);
+		window.addEventListener('scroll', updateProjectHeader, { passive: true });
+		window.addEventListener('pageshow', updateProjectHeader);
+		updateProjectHeader();
+	}
 	const button = document.querySelector<HTMLButtonElement>('.site-header__menu');
 	const menu = document.querySelector<HTMLElement>('.mobile-menu');
 	const header = document.querySelector<HTMLElement>('.site-header');

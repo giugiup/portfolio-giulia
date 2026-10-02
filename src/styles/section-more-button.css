@@ -1,0 +1,36 @@
+/* Shared mobile appearance from the Projects more button. */
+@media (max-width: 899px) {
+  .section-more-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-16);
+    min-inline-size: 212px;
+    min-block-size: 62px;
+    padding: 0 var(--space-28);
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-sand-light) 5%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--color-text-primary);
+    font: inherit;
+    letter-spacing: inherit;
+    transition: transform 300ms cubic-bezier(.22,1,.36,1), background-color 300ms ease, border-color 300ms ease;
+  }
+  @media (hover: hover) {
+    .section-more-button:hover {
+      transform: translateY(-2px);
+      background-color: rgba(242,228,220,.04);
+      border-color: transparent;
+    }
+  }
+  .section-more-button:focus-visible {
+    outline: 1px solid var(--color-text-primary);
+    outline-offset: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .section-more-button { transition: none; }
+    .section-more-button:hover { transform: none; }
+  }
+}

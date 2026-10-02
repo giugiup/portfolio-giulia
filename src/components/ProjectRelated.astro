@@ -1,0 +1,40 @@
+---
+import ProjectRelatedCard from './ProjectRelatedCard.astro';
+interface Props { projects: { title: string; year: string; href: string }[]; }
+const { projects } = Astro.props;
+---
+<section class="project-related project-container" aria-label="Projetos relacionados">
+  <ul class="project-related__track" id="related-projects" tabindex="0" aria-label="Galeria de projetos relacionados">
+    {projects.map((project, index) => <ProjectRelatedCard {...project} tone={(['thumbnail', 'sand', 'dark'] as const)[index % 3]} />)}
+  </ul>
+  <div class="project-related__controls">
+    <input class="project-related__scrollbar" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição na galeria de projetos relacionados" aria-controls="related-projects" />
+    <div class="project-related__arrows">
+      <button type="button" data-direction="-1" aria-label="Projetos anteriores" aria-controls="related-projects" disabled><img src="/icons/project-v1/previous.svg" alt="" width="20" height="20" /></button>
+      <button type="button" data-direction="1" aria-label="Próximos projetos" aria-controls="related-projects"><img src="/icons/project-v1/next.svg" alt="" width="20" height="20" /></button>
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>('.project-related').forEach(root => {
+    const track = root.querySelector<HTMLElement>('.project-related__track')!;
+    const slider = root.querySelector<HTMLInputElement>('input')!;
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('button')];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      const max = track.scrollWidth - track.clientWidth;
+      slider.value = String(max > 0 ? track.scrollLeft / max * 100 : 0);
+      slider.disabled = max <= 0;
+      buttons[0].disabled = track.scrollLeft <= 1;
+      buttons[1].disabled = track.scrollLeft >= max - 1;
+    };
+    buttons.forEach(button => button.addEventListener('click', () => {
+      const step = track.firstElementChild!.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap);
+      track.scrollBy({ left: Number(button.dataset.direction) * step, behavior: reduced.matches ? 'instant' : 'smooth' });
+    }));
+    slider.addEventListener('input', () => { track.scrollLeft = Number(slider.value) / 100 * (track.scrollWidth - track.clientWidth); });
+    track.addEventListener('scroll', update, { passive: true });
+    new ResizeObserver(update).observe(track);
+    update();
+  });
+</script>

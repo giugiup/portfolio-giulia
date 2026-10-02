@@ -1,0 +1,23 @@
+/* The outgoing transition ends in this exact Sand; cover before content paints. */
+html[data-project-reveal], html[data-project-reveal] body { background: #D9B9A7; }
+.project-page-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  background: #D9B9A7;
+  opacity: 1;
+  pointer-events: none;
+}
+html[data-project-reveal] .project-page { opacity: 0; transform: translateY(10px); }
+html[data-project-reveal='running'] .project-page-reveal {
+  animation: project-overlay-reveal 450ms cubic-bezier(.22, 1, .36, 1) 100ms both;
+}
+html[data-project-reveal='running'] .project-page {
+  animation: project-content-reveal 550ms cubic-bezier(.22, 1, .36, 1) 120ms both;
+}
+@keyframes project-overlay-reveal { to { opacity: 0; } }
+@keyframes project-content-reveal { to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  html[data-project-reveal] .project-page { opacity: 1; transform: none; animation: none; }
+  html[data-project-reveal] .project-page-reveal { display: none; animation: none; }
+}

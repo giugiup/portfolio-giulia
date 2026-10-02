@@ -1,0 +1,20 @@
+---
+interface Props {
+  tone?: 'light' | 'dark' | 'thumbnail' | 'sand';
+  format?: 'wide' | 'portrait' | 'thumbnail';
+  src?: string;
+  alt?: string;
+  caption?: boolean | string;
+  rounded?: 'large' | 'small';
+}
+const { src, alt = '', tone = 'light', format = 'wide', caption = true, rounded = 'large' } = Astro.props;
+---
+<div class:list={['project-media', `project-media--${tone}`, `project-media--${format}`, `project-media--radius-${rounded}`]}>
+  {src ? <>
+    <img class="project-media__image" src={src} alt={alt} loading="lazy" decoding="async" />
+    {typeof caption === 'string' && <p class="project-media__caption">{caption}</p>}
+  </> : <div class="project-media__content">
+    <img src={`/icons/project-v1/placeholder-${tone === 'dark' ? 'dark' : 'light'}.svg`} width="40" height="40" alt="" />
+    {caption && <><p>Imagem do projeto</p><small>Conteúdo visual provisório</small></>}
+  </div>}
+</div>

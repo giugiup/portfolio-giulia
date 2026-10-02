@@ -1,0 +1,49 @@
+---
+import '../styles/project-page-reveal.css';
+---
+<script is:inline>
+  // Runs during parsing, before the project container can paint.
+  (() => {
+    const root = document.documentElement;
+    let handoff;
+    try {
+      const stored = sessionStorage.getItem('project-transition');
+      sessionStorage.removeItem('project-transition');
+      handoff = stored ? JSON.parse(stored) : null;
+    } catch { return; }
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    if (!handoff || handoff.url !== location.href || Date.now() - handoff.at > 15000 || motion.matches) return;
+
+    root.dataset.projectReveal = 'pending';
+    const overlay = document.createElement('div');
+    overlay.className = 'project-page-reveal';
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.append(overlay);
+    let fallback;
+    const finish = () => {
+      delete root.dataset.projectReveal;
+      overlay.remove();
+      clearTimeout(fallback);
+      motion.removeEventListener('change', finish);
+    };
+    motion.addEventListener('change', finish);
+    window.addEventListener('pageshow', event => { if (event.persisted) finish(); });
+    const start = () => {
+      if (root.dataset.projectReveal !== 'pending') return;
+      const page = document.querySelector('.project-page');
+      page?.addEventListener('animationend', event => {
+        if (event.animationName === 'project-content-reveal') finish();
+      });
+      root.dataset.projectReveal = 'running';
+      // Also recover if animations are cancelled or overridden by the browser.
+      fallback = setTimeout(finish, 1200);
+    };
+    const ready = () => {
+      // Let local fonts settle under Sand, with a bounded wait if loading stalls.
+      const fontWait = setTimeout(start, 1000);
+      document.fonts.ready.then(() => { clearTimeout(fontWait); start(); });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true });
+    else ready();
+  })();
+</script>

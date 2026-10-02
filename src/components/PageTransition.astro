@@ -41,6 +41,7 @@ const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
     };
     type ProjectDetail = { url?: string; slug?: string };
     let isTransitioning = false;
+    let isNavigating = false;
     let animations: Animation[] = [];
     // Capture authored state once, including SVG display and fills. Restoring it
     // leaves responsive sizing and reduced-motion visibility under CSS control.
@@ -67,11 +68,18 @@ const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
       status!.textContent = '';
       root.removeAttribute('data-project-transition-active');
       isTransitioning = false;
+      isNavigating = false;
     }
 
+    // A cached Home must be usable again when returning with the Back button.
+    window.addEventListener('pageshow', (event) => {
+      if (!event.persisted) return;
+      resetTransition();
+      document.dispatchEvent(new CustomEvent('project-transition:end'));
+    });
+
     function onTransitionReady(detail: ProjectDetail) {
-      // Future navigation boundary: solid Sand and completely invisible logo.
-      // No navigation yet; the prototype holds Sand, then reveals the same page.
+      // Solid Sand and completely invisible logo, before the final hold.
       overlay!.dataset.stage = 'ready';
       document.dispatchEvent(new CustomEvent('project-transition:ready', { detail }));
     }
@@ -155,9 +163,19 @@ const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
         await Promise.all(animations.map((animation) => animation.finished));
         onTransitionReady(detail);
         // A constant animation provides a cancellable hold without scattered timers.
-        const hold = overlay.animate([{ backgroundColor: sand }, { backgroundColor: sand }], { duration: t.sandHold });
+        // With a destination, keep Sand opaque through the original 2s duration.
+        const hold = overlay.animate([{ backgroundColor: sand }, { backgroundColor: sand }], { duration: t.sandHold + (detail.url ? t.returnDuration : 0) });
         animations.push(hold);
         await hold.finished;
+        if (detail.url) {
+          // One-shot handoff; storage restrictions must never prevent navigation.
+          try {
+            sessionStorage.setItem('project-transition', JSON.stringify({ url: detail.url, at: Date.now() }));
+          } catch { /* Navigate normally when session storage is unavailable. */ }
+          window.location.assign(detail.url);
+          isNavigating = true;
+          return;
+        }
         overlay.dataset.stage = 'returning';
         const returning = overlay.animate([
           { backgroundColor: sand, opacity: 1, offset: 0, easing },
@@ -173,8 +191,11 @@ const logo = artwork.replace(/id="([^"]+)"/g, 'id="transition-$1"');
           console.error('PageTransition failed:', error);
         }
       } finally {
-        resetTransition();
-        document.dispatchEvent(new CustomEvent('project-transition:end'));
+        // Keep the overlay and click lock until the new document replaces Home.
+        if (!isNavigating) {
+          resetTransition();
+          document.dispatchEvent(new CustomEvent('project-transition:end'));
+        }
       }
     });
   })();
