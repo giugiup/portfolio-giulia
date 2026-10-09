@@ -563,6 +563,7 @@ export const projects = [
             width: 1280,
             height: 712,
             figmaExport: true,
+            rounded: 'top',
           },
         },
         {

@@ -5,6 +5,7 @@ interface Props { projects: (typeof projectCollection)[number][]; }
 const { projects } = Astro.props;
 ---
 <section class="project-related project-container" aria-label="Projetos relacionados" data-project-carousel>
+  <h2 class="project-related__title">Outros projetos</h2>
   <div class="project-related__viewport" tabindex="0" aria-label="Projetos relacionados; use as setas do teclado para navegar">
     <ul class="project-related__track">
       {projects.map(project => <ProjectRelatedCard project={project} />)}

@@ -7,7 +7,9 @@ const layouts = ['full', 'two-columns', 'three-columns', 'text', 'video'];
 if (!layouts.includes(block.layout)) throw new Error(`Layout de galeria desconhecido: ${block.layout}`);
 ---
 <div
-  class:list={['project-gallery__block', `project-gallery__block--${block.layout}`]}
+  class:list={['project-gallery__block', `project-gallery__block--${block.layout}`, {
+    'project-gallery__block--media-radius-top': block.layout === 'full' && block.media.rounded === 'top',
+  }]}
   data-gallery-layout={block.layout}
   style={`--project-gallery-gap-before: ${block.gapBefore ?? 16}px`}
 >
