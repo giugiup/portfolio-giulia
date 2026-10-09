@@ -3,7 +3,14 @@ import '../styles/global.css';
 import CustomCursor from '../components/CustomCursor.astro';
 import PageTransition from '../components/PageTransition.astro';
 
-const { title = 'Portfólio', description, lang = 'pt-BR' } = Astro.props;
+const {
+	title = 'Giulia Moraes — Designer',
+	description = 'Portfolio de Giulia Moraes — projetos de design gráfico, interfaces digitais e experiências visuais.',
+	ogImage = '/op-image.jpg',
+	lang = 'pt-BR',
+} = Astro.props;
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const absoluteOgImage = ogImage && Astro.site ? new URL(ogImage, Astro.site).href : undefined;
 ---
 
 <!doctype html>
@@ -12,10 +19,21 @@ const { title = 'Portfólio', description, lang = 'pt-BR' } = Astro.props;
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
-		{description && <meta name="description" content={description} />}
+		<meta name="description" content={description} />
+		{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="apple-touch-icon" href="/favicon.png" />
 		<title>{title}</title>
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+		{absoluteOgImage && <meta property="og:image" content={absoluteOgImage} />}
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		{absoluteOgImage && <meta name="twitter:image" content={absoluteOgImage} />}
 	</head>
 	<body>
 		<CustomCursor />

@@ -10,7 +10,8 @@ export function getStaticPaths() {
 const { project } = Astro.props;
 const pageTitle = project.page.pageTitle ?? `${project.title} — Giulia Moraes`;
 const metaDescription = project.page.metaDescription ?? project.description;
+const ogImage = project.page.ogImage;
 ---
-<Layout title={pageTitle} description={metaDescription}>
+<Layout title={pageTitle} description={metaDescription} ogImage={ogImage}>
   <ProjectTemplate project={project} />
 </Layout>

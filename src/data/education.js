@@ -7,6 +7,7 @@
   { id: 'design-centrado-no-usuario', type: 'Curso livre', course: 'Design Centrado no Usuário', institution: 'PUCRS', year: '2025', position: { left: 996, top: 574, rotation: -4 } },
   { id: 'imersao-em-design', type: 'Curso livre', course: 'Imersão em Design', institution: 'Tera', year: '2024', position: { left: 462.4187, top: 610, rotation: 3 } },
   { id: 'impacto-do-branding', type: 'Curso livre', course: 'Impacto do Branding', institution: 'Ana Couto', year: '2025', position: { left: 128, top: 578, rotation: -3 } },
+  { id: 'fluencia-em-ia', type: 'Curso livre', course: 'Fluência em IA', institution: 'Fundação Bradesco', year: '2026', position: { left: 710, top: 628, rotation: -3 } },
 ];
 
 // Compatibilidade com Education.astro, preservado para referência.

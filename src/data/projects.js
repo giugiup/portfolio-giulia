@@ -524,7 +524,7 @@ export const projects = [
   {
     title: 'Cartão de crédito Neon',
     homeTitle: 'Neon',
-    description: 'Cartão de crédito Neon',
+    description: 'Case de estudo de reformulação da página de cartão de crédito do banco Neon. O objetivo foi deixar a jornada do usuário mais clara e efetiva.',
     tags: [],
     id: 'project-neon',
     homeOrder: 1,
