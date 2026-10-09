@@ -25,24 +25,20 @@ const navigation = [
 				{navigation.map(({ text, href }) => <li><a href={href} data-cursor="open">{text}</a></li>)}
 			</ul>
 		</nav>
-		<div class="site-header__actions">
-			<span class="availability">
-				<span class="availability__dot" aria-hidden="true"></span>
-				Disponível para novos projetos
-			</span>
-			<Button {...contactNavigation} variant="header" iconSrc={arrowIconSrc} />
-		</div>
-		{!isProject && <button class="site-header__menu" type="button" aria-expanded="false" aria-controls="mobile-navigation">
+		<button class="site-header__menu" type="button" aria-expanded="false" aria-controls="mobile-navigation">
 			<span class="site-header__menu-surface">
 				<span>Menu</span>
 				<span class="site-header__menu-icon" aria-hidden="true">
 					{Array.from({ length: 9 }, () => <span></span>)}
 				</span>
 			</span>
-		</button>}
+		</button>
+		<div class="site-header__actions">
+			<Button {...contactNavigation} variant="header" iconSrc={arrowIconSrc} />
+		</div>
 	</div>
 </header>
-{!isProject && <div class="mobile-menu" hidden inert>
+<div class="mobile-menu" hidden inert>
 	<nav id="mobile-navigation" aria-label="Navegação mobile">
 		<ul>
 			{[...navigation, contactNavigation].map(({ text, href }, index) => (
@@ -50,7 +46,7 @@ const navigation = [
 			))}
 		</ul>
 	</nav>
-</div>}
+</div>
 
 <script>
 	const projectHeader = document.querySelector<HTMLElement>('.site-header--project-light');
@@ -110,9 +106,14 @@ const navigation = [
 				restorePage?.();
 				restorePage = undefined;
 				if (destination) {
-					const target = document.querySelector<HTMLElement>(destination);
+					const url = new URL(destination, window.location.href);
+					if (url.pathname !== window.location.pathname || url.search !== window.location.search) {
+						window.location.assign(url.href);
+						return;
+					}
+					const target = url.hash ? document.querySelector<HTMLElement>(url.hash) : null;
 					if (target) {
-						history.pushState(null, '', destination);
+						history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);
 						target.scrollIntoView();
 					}
 				}
@@ -121,7 +122,7 @@ const navigation = [
 		button.addEventListener('click', () => void setMenuOpen(!isMenuOpen));
 		menu.addEventListener('click', event => {
 			const link = (event.target as Element).closest<HTMLAnchorElement>('a');
-			if (link) { event.preventDefault(); void setMenuOpen(false, link.hash); }
+			if (link) { event.preventDefault(); void setMenuOpen(false, link.href); }
 			else void setMenuOpen(false);
 		});
 		document.addEventListener('keydown', event => {
@@ -242,46 +243,6 @@ const navigation = [
 		z-index: 2;
 		pointer-events: auto;
 	}
-	.availability {
-		display: none;
-		align-items: center;
-		gap: var(--space-8);
-		min-block-size: 26px;
-		padding-inline: var(--space-12);
-		border: var(--border-width-1) solid var(--color-border-subtle);
-		border-radius: var(--radius-full);
-		background-color: var(--color-bg-page);
-		color: var(--color-text-primary);
-		font-size: var(--font-size-11);
-		font-weight: var(--font-weight-regular);
-		line-height: var(--line-height-16);
-		white-space: nowrap;
-	}
-	.availability__dot {
-		inline-size: 5px;
-		block-size: 5px;
-		border-radius: var(--radius-full);
-		background-color: var(--color-status-available);
-		animation: availability-pulse 1.8s ease-in-out infinite;
-		transform-origin: center;
-	}
-
-	@keyframes availability-pulse {
-		0%,
-		100% {
-			opacity: 0.55;
-			transform: scale(0.9);
-			box-shadow: 0 0 0 0 rgba(180, 221, 50, 0);
-		}
-
-		50% {
-			opacity: 1;
-			transform: scale(1);
-			box-shadow: 0 0 0 4px rgba(180, 221, 50, 0.12);
-		}
-	}
-	/* PROVISÓRIO: badge oculto no mobile para preservar logo e CTA. */
-	@media (min-width: 768px) { .availability { display: inline-flex; } }
 	@media (min-width: 1280px) {
 		.site-header__inner { padding-inline: var(--space-40); }
 		.site-header__logo { inline-size: 60px; }
@@ -350,14 +311,6 @@ const navigation = [
 			outline: var(--border-width-2) solid var(--color-text-primary);
 			outline-offset: var(--space-4);
 			border-radius: var(--radius-full);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.availability__dot {
-			animation: none;
-			opacity: 1;
-			transform: none;
-			box-shadow: none;
 		}
 	}
 </style>

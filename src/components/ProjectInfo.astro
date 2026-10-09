@@ -4,14 +4,14 @@ interface Props {
   id: string;
   title: string;
   description: string;
-  tags: readonly string[];
+  tags?: readonly string[];
   type?: string | readonly string[];
   client?: string;
   year?: string | number;
   compact?: boolean;
   showTitle?: boolean;
 }
-const { id, title, description, tags, type, client, year, compact = false, showTitle = true } = Astro.props;
+const { id, title, description, tags = [], type, client, year, compact = false, showTitle = true } = Astro.props;
 const types = type ? (Array.isArray(type) ? type : [type]) : tags;
 ---
 <div class:list={['project-info', { 'project-info--compact': compact }]}>

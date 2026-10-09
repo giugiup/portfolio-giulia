@@ -1,8 +1,10 @@
 ---
+import { projectHref } from '../data/projects.js';
 interface Props {
   id: string;
   title: string;
-  href?: string;
+  slug: string;
+  coverVariant?: number;
   mobileTitle?: string;
   index: number;
   image?: {
@@ -13,9 +15,10 @@ interface Props {
     mobile?: { src: string; width: number; height: number };
   };
 }
-const { id, title, href, mobileTitle = title, index, image } = Astro.props;
-// Only three decorative placeholder sets exist; reuse them for the extra slots.
-const assetNumber = String(index % 3 + 1).padStart(2, '0');
+const { id, title, slug, mobileTitle = title, index, image, coverVariant = index % 3 + 1 } = Astro.props;
+const href = projectHref(slug);
+// Keep each existing cover theme independent of its position in the collection.
+const assetNumber = String(coverVariant).padStart(2, '0');
 ---
 <figure id={id} class:list={['project-cover', `project-cover--${assetNumber}`, { 'is-active': index === 0 }]} aria-label={title} data-cursor="project">
   {image ? <picture>
@@ -30,18 +33,10 @@ const assetNumber = String(index % 3 + 1).padStart(2, '0');
   </>}
   <span class="project-cover__mobile-action" aria-hidden="true"><img src="/icons/arrow-northeast.svg" alt="" width="18" height="18" /></span>
   <div class="project-cover__mobile-title"><h3>{mobileTitle}</h3></div>
-  {href && <a class="project-cover__trigger" href={href} data-project-transition={id} data-cursor="project" aria-label={`Ver projeto: ${title}`}></a>}
+  {href && <a class="project-cover__trigger" href={href} data-project-transition={slug} data-cursor="project" aria-label={`Ver projeto: ${title}`}></a>}
 </figure>
 <script>
-  document.querySelectorAll<HTMLAnchorElement>('a[data-project-transition]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || link.target === '_blank' || link.hasAttribute('download')) return;
-      event.preventDefault();
-      document.dispatchEvent(new CustomEvent('project-transition:start', {
-        detail: { slug: link.dataset.projectTransition, url: link.href },
-      }));
-    });
-  });
+  import '../scripts/project-navigation';
 </script>
 <style>
   .project-cover__mobile-action, .project-cover__mobile-title { display: none; }

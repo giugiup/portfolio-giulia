@@ -1,20 +1,47 @@
 ---
 interface Props {
-  tone?: 'light' | 'dark' | 'thumbnail' | 'sand';
-  format?: 'wide' | 'portrait' | 'thumbnail';
   src?: string;
   alt?: string;
+  width?: number;
+  height?: number;
+  placeholder?: boolean;
+  tone?: 'light' | 'dark' | 'thumbnail' | 'sand';
   caption?: boolean | string;
   rounded?: 'large' | 'small';
+  frameWidth?: number;
+  frameHeight?: number;
+  fit?: 'cover' | 'contain';
+  objectPosition?: string;
+  mobileNatural?: boolean;
+  figmaExport?: boolean;
 }
-const { src, alt = '', tone = 'light', format = 'wide', caption = true, rounded = 'large' } = Astro.props;
+const {
+  src, alt = '', width = 1280, height = 720, placeholder = !src,
+  tone = 'light', caption = true, rounded = 'large',
+  frameWidth, frameHeight, fit, objectPosition = '50% 50%', mobileNatural = false, figmaExport = false,
+} = Astro.props;
+const isPlaceholder = placeholder || !src;
+const hasMediaFrame = Boolean(frameWidth && frameHeight && fit);
 ---
-<div class:list={['project-media', `project-media--${tone}`, `project-media--${format}`, `project-media--radius-${rounded}`]}>
-  {src ? <>
-    <img class="project-media__image" src={src} alt={alt} loading="lazy" decoding="async" />
-    {typeof caption === 'string' && <p class="project-media__caption">{caption}</p>}
-  </> : <div class="project-media__content">
+<div class:list={['project-media', `project-media--${tone}`, `project-media--radius-${rounded}`, {
+  'project-media--placeholder': isPlaceholder,
+  'project-media--mobile-natural': mobileNatural,
+  'project-media--figma-export': figmaExport,
+}]}
+  style={isPlaceholder
+    ? `aspect-ratio: ${width} / ${height}`
+    : hasMediaFrame
+      ? `aspect-ratio: ${frameWidth} / ${frameHeight}`
+      : undefined}>
+  {isPlaceholder ? <div class="project-media__content">
     <img src={`/icons/project-v1/placeholder-${tone === 'dark' ? 'dark' : 'light'}.svg`} width="40" height="40" alt="" />
-    {caption && <><p>Imagem do projeto</p><small>Conteúdo visual provisório</small></>}
-  </div>}
+    {caption && <><p>{typeof caption === 'string' ? caption : 'Imagem do projeto'}</p><small>Conteúdo visual provisório</small></>}
+  </div> : <>
+    <img
+      class:list={['project-media__image', { 'project-media__image--framed': hasMediaFrame }]}
+      style={hasMediaFrame ? `object-fit: ${fit}; object-position: ${objectPosition};` : undefined}
+      src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async"
+    />
+    {typeof caption === 'string' && <p class="project-media__caption">{caption}</p>}
+  </>}
 </div>

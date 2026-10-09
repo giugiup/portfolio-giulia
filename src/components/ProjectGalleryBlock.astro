@@ -1,10 +1,19 @@
 ---
 import ProjectMedia from './ProjectMedia.astro';
+import ProjectNarrative from './ProjectNarrative.astro';
+import ProjectVideo from './ProjectVideo.astro';
 const { block } = Astro.props;
+const layouts = ['full', 'two-columns', 'three-columns', 'text', 'video'];
+if (!layouts.includes(block.layout)) throw new Error(`Layout de galeria desconhecido: ${block.layout}`);
 ---
-{block.layout === 'group' ? <div class="project-gallery__group">
-  {block.items.map(item => <Astro.self block={item} />)}
-</div> : block.layout === 'split' ? <div class="project-gallery__pair">
-  {block.items.map(item => <ProjectMedia {...item} format="portrait" />)}
-</div> : block.layout === 'text' ? <div class="project-narrative"><p>{block.content}</p></div>
-: <ProjectMedia {...block} />}
+<div
+  class:list={['project-gallery__block', `project-gallery__block--${block.layout}`]}
+  data-gallery-layout={block.layout}
+  style={`--project-gallery-gap-before: ${block.gapBefore ?? 16}px`}
+>
+  {block.layout === 'full' && <ProjectMedia {...block.media} />}
+  {(block.layout === 'two-columns' || block.layout === 'three-columns') &&
+    block.items.map(media => <ProjectMedia {...media} />)}
+  {block.layout === 'text' && <ProjectNarrative content={block.content} paddingTop={block.paddingTop} paddingBottom={block.paddingBottom} />}
+  {block.layout === 'video' && <ProjectVideo {...block.media} />}
+</div>

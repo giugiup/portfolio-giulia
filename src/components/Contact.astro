@@ -2,7 +2,11 @@
 import Button from './Button.astro';
 import '../styles/contact-footer.css';
 
-const { href } = Astro.props;
+const {
+  href,
+  secondaryHref = '#top',
+  secondaryText = 'Voltar para o topo',
+} = Astro.props;
 ---
 
 <section class="contact" id="contato" aria-labelledby="contact-title">
@@ -12,17 +16,8 @@ const { href } = Astro.props;
       <p class="contact__description">Seja para um novo projeto, uma oportunidade de trabalho ou uma conversa sobre design e produto, estou por aqui.</p>
       <div class="contact__actions">
         <Button text="Entre em contato" href={href} variant="contact" iconSrc="/icons/arrow-northeast.svg" dataCursor="contact" />
-        <Button text="Voltar para o topo" variant="contact-top" showIcon={false} dataCursor="" />
+        <Button text={secondaryText} href={secondaryHref} variant="contact-top" showIcon={false} dataCursor="" />
       </div>
     </div>
   </div>
 </section>
-
-<script>
-  document.querySelector<HTMLButtonElement>('.contact .button--contact-top')?.addEventListener('click', () => {
-    window.scrollTo({
-      top: 0,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-    });
-  });
-</script>

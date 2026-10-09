@@ -1,0 +1,32 @@
+---
+import ProjectMedia from './ProjectMedia.astro';
+interface Props {
+  src?: string;
+  width?: number;
+  height?: number;
+  placeholder?: boolean;
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  playsInline?: boolean;
+  frameWidth?: number;
+  frameHeight?: number;
+  cropLeft?: number;
+}
+const {
+  src, width = 1280, height = 720, placeholder = !src,
+  autoplay = true, loop = true, muted = true, playsInline = true,
+  frameWidth, frameHeight, cropLeft,
+} = Astro.props;
+const hasMediaFrame = Boolean(frameWidth && frameHeight);
+---
+{src && !placeholder ? <div
+  class:list={['project-media', { 'project-media--video-frame': hasMediaFrame }]}
+  style={hasMediaFrame ? `aspect-ratio: ${frameWidth} / ${frameHeight};` : undefined}
+>
+  <video
+    class:list={['project-media__video', { 'project-media__video--crop-left': cropLeft }]}
+    style={cropLeft ? `--project-media-crop-left: ${cropLeft}%;` : undefined}
+    src={src} width={width} height={height}
+    autoplay={autoplay} loop={loop} muted={muted} playsinline={playsInline} preload="metadata" />
+</div> : <ProjectMedia width={width} height={height} placeholder caption="Vídeo do projeto" />}

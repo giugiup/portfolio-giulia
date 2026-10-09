@@ -13,29 +13,38 @@ const facts = [
   { label: 'Desenvolvido em', value: project.page.developedAt },
   { label: 'Cliente', value: project.client },
   { label: 'Ano', value: project.year },
-  { label: 'Projeto', value: project.type.join(' · ') },
-];
-const related = [...new Set(project.page.relatedProjects as string[])]
-  .filter(slug => slug !== project.slug)
-  .map(slug => publishedProjects.find(candidate => candidate.slug === slug))
-  .filter(Boolean);
+  { label: 'Projeto', value: project.page.projectType ?? project.type.join(' · ') },
+].filter(({ value }) => value);
+const related = publishedProjects.filter(candidate => candidate.slug !== project.slug);
 ---
 <ProjectPageReveal />
 <div class="project-page">
   <Header variant="project-light" logoSrc="/icons/project-v1/logo.svg" arrowIconSrc="/icons/project-v1/arrow-contact.svg" />
   <main>
     <section class="project-hero project-container" aria-labelledby="project-title">
-      <h1 id="project-title">{project.title}</h1>
-      <div class="project-overview">
-        <div class="project-summary">{project.page.introduction.map((paragraph: string) => <p>{paragraph}</p>)}</div>
-        <dl class="project-facts">{facts.map(({ label, value }) => <div><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+      <div class="project-hero__title">
+        <h1 id="project-title">{project.title}</h1>
+        {project.page.projectUrl && <a
+          class="project-hero__external-link"
+          href={project.page.projectUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cursor="project"
+        >
+          <span>Navegue pelo projeto</span>
+          <span class="project-hero__external-link-icon" aria-hidden="true"></span>
+        </a>}
       </div>
+      {(project.page.introduction.length > 0 || facts.length > 0) && <div class="project-overview">
+        {project.page.introduction.length > 0 && <div class="project-summary">{project.page.introduction.map((paragraph: string) => <p>{paragraph}</p>)}</div>}
+        {facts.length > 0 && <dl class="project-facts">{facts.map(({ label, value }) => <div><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
+      </div>}
     </section>
-    <section class="project-gallery project-container" aria-label="Imagens do projeto">
+    {project.page.gallery.length > 0 && <section class="project-gallery project-container" aria-label="Imagens do projeto">
       {project.page.gallery.map(block => <ProjectGalleryBlock block={block} />)}
-    </section>
+    </section>}
     {related.length > 0 && <ProjectRelated projects={related} />}
-    <Contact href="https://wa.me/5511930591609" />
+    <Contact href="https://wa.me/5511930591609" secondaryHref="/" secondaryText="Página principal" />
   </main>
   <Footer />
 </div>

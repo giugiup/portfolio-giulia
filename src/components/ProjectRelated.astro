@@ -1,40 +1,139 @@
 ---
 import ProjectRelatedCard from './ProjectRelatedCard.astro';
-interface Props { projects: { title: string; year: string; href: string }[]; }
+import type { projects as projectCollection } from '../data/projects.js';
+interface Props { projects: (typeof projectCollection)[number][]; }
 const { projects } = Astro.props;
 ---
-<section class="project-related project-container" aria-label="Projetos relacionados">
-  <ul class="project-related__track" id="related-projects" tabindex="0" aria-label="Galeria de projetos relacionados">
-    {projects.map((project, index) => <ProjectRelatedCard {...project} tone={(['thumbnail', 'sand', 'dark'] as const)[index % 3]} />)}
-  </ul>
+<section class="project-related project-container" aria-label="Projetos relacionados" data-project-carousel>
+  <div class="project-related__viewport" tabindex="0" aria-label="Projetos relacionados; use as setas do teclado para navegar">
+    <ul class="project-related__track">
+      {projects.map(project => <ProjectRelatedCard project={project} />)}
+    </ul>
+  </div>
   <div class="project-related__controls">
-    <input class="project-related__scrollbar" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição na galeria de projetos relacionados" aria-controls="related-projects" />
+    <div class="project-related__scrollbar" aria-hidden="true">
+      <span class="project-related__scrollbar-thumb"></span>
+    </div>
     <div class="project-related__arrows">
-      <button type="button" data-direction="-1" aria-label="Projetos anteriores" aria-controls="related-projects" disabled><img src="/icons/project-v1/previous.svg" alt="" width="20" height="20" /></button>
-      <button type="button" data-direction="1" aria-label="Próximos projetos" aria-controls="related-projects"><img src="/icons/project-v1/next.svg" alt="" width="20" height="20" /></button>
+      <button class="project-related__arrow" type="button" aria-label="Projeto anterior" data-related-previous disabled>
+        <span aria-hidden="true">←</span>
+      </button>
+      <button class="project-related__arrow" type="button" aria-label="Próximo projeto" data-related-next>
+        <span aria-hidden="true">→</span>
+      </button>
     </div>
   </div>
 </section>
+
 <script>
-  document.querySelectorAll<HTMLElement>('.project-related').forEach(root => {
-    const track = root.querySelector<HTMLElement>('.project-related__track')!;
-    const slider = root.querySelector<HTMLInputElement>('input')!;
-    const buttons = [...root.querySelectorAll<HTMLButtonElement>('button')];
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  document.querySelectorAll<HTMLElement>('[data-project-carousel]').forEach((carousel) => {
+    const viewport = carousel.querySelector<HTMLElement>('.project-related__viewport');
+    const thumb = carousel.querySelector<HTMLElement>('.project-related__scrollbar-thumb');
+    const previous = carousel.querySelector<HTMLButtonElement>('[data-related-previous]');
+    const next = carousel.querySelector<HTMLButtonElement>('[data-related-next]');
+    const firstCard = carousel.querySelector<HTMLElement>('.project-related-card');
+    if (!viewport || !thumb || !previous || !next || !firstCard) return;
+
+    let updateFrame = 0;
+    let pointerId: number | null = null;
+    let startX = 0;
+    let startY = 0;
+    let startScrollLeft = 0;
+    let dragging = false;
+    let suppressClick = false;
     const update = () => {
-      const max = track.scrollWidth - track.clientWidth;
-      slider.value = String(max > 0 ? track.scrollLeft / max * 100 : 0);
-      slider.disabled = max <= 0;
-      buttons[0].disabled = track.scrollLeft <= 1;
-      buttons[1].disabled = track.scrollLeft >= max - 1;
+      cancelAnimationFrame(updateFrame);
+      updateFrame = requestAnimationFrame(() => {
+        const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+        const thumbWidth = viewport.scrollWidth ? viewport.clientWidth / viewport.scrollWidth * 100 : 100;
+        const progress = maxScroll ? viewport.scrollLeft / maxScroll : 0;
+        thumb.style.width = `${thumbWidth}%`;
+        thumb.style.left = `${progress * (100 - thumbWidth)}%`;
+        previous.disabled = viewport.scrollLeft <= 1;
+        next.disabled = viewport.scrollLeft >= maxScroll - 1;
+      });
     };
-    buttons.forEach(button => button.addEventListener('click', () => {
-      const step = track.firstElementChild!.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap);
-      track.scrollBy({ left: Number(button.dataset.direction) * step, behavior: reduced.matches ? 'instant' : 'smooth' });
-    }));
-    slider.addEventListener('input', () => { track.scrollLeft = Number(slider.value) / 100 * (track.scrollWidth - track.clientWidth); });
-    track.addEventListener('scroll', update, { passive: true });
-    new ResizeObserver(update).observe(track);
+
+    const move = (direction: -1 | 1) => {
+      const gap = parseFloat(getComputedStyle(viewport.querySelector('ul')!).columnGap) || 0;
+      const distance = firstCard.getBoundingClientRect().width + gap;
+      const destination = Math.max(0, Math.min(viewport.scrollWidth - viewport.clientWidth, viewport.scrollLeft + direction * distance));
+      viewport.scrollTo({
+        left: destination,
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      });
+    };
+
+    const finishDrag = (event: PointerEvent) => {
+      if (event.pointerId !== pointerId) return;
+      if (dragging) {
+        viewport.classList.remove('is-dragging');
+        suppressClick = true;
+        window.setTimeout(() => { suppressClick = false; }, 0);
+
+        const cards = [...viewport.querySelectorAll<HTMLElement>('.project-related-card')];
+        const nearestCard = cards.reduce((nearest, card) => {
+          const distance = Math.abs(card.getBoundingClientRect().left - viewport.getBoundingClientRect().left);
+          return distance < nearest.distance ? { card, distance } : nearest;
+        }, { card: cards[0], distance: Number.POSITIVE_INFINITY }).card;
+        const destination = Math.max(0, Math.min(
+          viewport.scrollWidth - viewport.clientWidth,
+          viewport.scrollLeft + nearestCard.getBoundingClientRect().left - viewport.getBoundingClientRect().left,
+        ));
+        viewport.scrollTo({
+          left: destination,
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+        });
+      }
+      if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+      pointerId = null;
+      dragging = false;
+    };
+
+    viewport.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || event.isPrimary === false) return;
+      pointerId = event.pointerId;
+      startX = event.clientX;
+      startY = event.clientY;
+      startScrollLeft = viewport.scrollLeft;
+      dragging = false;
+    });
+    viewport.addEventListener('pointermove', (event) => {
+      if (event.pointerId !== pointerId) return;
+      const deltaX = event.clientX - startX;
+      const deltaY = event.clientY - startY;
+      if (!dragging) {
+        if (Math.abs(deltaX) < 6 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+        dragging = true;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      }
+      if (event.cancelable) event.preventDefault();
+      viewport.scrollLeft = startScrollLeft - deltaX;
+    });
+    viewport.addEventListener('pointerup', finishDrag);
+    viewport.addEventListener('pointercancel', finishDrag);
+    viewport.addEventListener('click', (event) => {
+      if (!suppressClick) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      suppressClick = false;
+    }, true);
+    viewport.addEventListener('dragstart', event => event.preventDefault());
+
+    previous.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+    viewport.addEventListener('scroll', update, { passive: true });
+    viewport.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' && !previous.disabled) {
+        event.preventDefault();
+        move(-1);
+      } else if (event.key === 'ArrowRight' && !next.disabled) {
+        event.preventDefault();
+        move(1);
+      }
+    });
+    new ResizeObserver(update).observe(viewport);
     update();
   });
 </script>

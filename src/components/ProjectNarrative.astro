@@ -1,0 +1,13 @@
+---
+interface Props {
+  content: string | string[];
+  paddingTop?: number;
+  paddingBottom?: number;
+}
+const { content, paddingTop, paddingBottom } = Astro.props;
+const paragraphs = Array.isArray(content) ? content : [content];
+const paddingStyle = paddingTop !== undefined || paddingBottom !== undefined
+  ? `--project-narrative-padding-top: ${paddingTop ?? 112}px; --project-narrative-padding-bottom: ${paddingBottom ?? 112}px;`
+  : undefined;
+---
+<div class="project-narrative" style={paddingStyle}>{paragraphs.map(paragraph => <p>{paragraph}</p>)}</div>

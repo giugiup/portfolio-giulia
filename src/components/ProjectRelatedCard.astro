@@ -1,11 +1,24 @@
 ---
 import ProjectMedia from './ProjectMedia.astro';
-interface Props { title: string; year: string; href: string; tone?: 'thumbnail' | 'sand' | 'dark'; }
-const { title, year, href, tone = 'thumbnail' } = Astro.props;
+import { projectHref, type projects } from '../data/projects.js';
+interface Props { project: (typeof projects)[number]; }
+const { project } = Astro.props;
+const cover = 'image' in project ? project.image : undefined;
 ---
 <li class="project-related-card">
-  <a href={href} aria-label={`Ver projeto: ${title}`} data-cursor="project">
-  <ProjectMedia tone={tone} format="thumbnail" caption={false} rounded="small" />
-  <div class="project-related-card__caption"><h3>{title}</h3><span>{year}</span></div>
+  <a href={projectHref(project.slug)} aria-label={`Ver projeto: ${project.title}`} data-project-transition={project.slug} data-cursor="project">
+    <div class="project-related-card__cover">
+      {cover ? <picture>
+        {cover.mobile && <source media="(max-width: 899px)" srcset={cover.mobile.src} width={cover.mobile.width} height={cover.mobile.height} />}
+        <img src={cover.src} alt={cover.alt} width={cover.width} height={cover.height} loading="lazy" decoding="async" />
+      </picture> : <ProjectMedia width={800} height={650} tone="thumbnail" caption={false} rounded="small" />}
+    </div>
+    <div class="project-related-card__caption">
+      <h3>{project.title}</h3>
+      <img src="/icons/arrow-northeast.svg" alt="" width="20" height="20" />
+    </div>
   </a>
 </li>
+<script>
+  import '../scripts/project-navigation';
+</script>
