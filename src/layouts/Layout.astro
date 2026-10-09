@@ -19,6 +19,15 @@ const absoluteOgImage = ogImage && Astro.site ? new URL(ogImage, Astro.site).hre
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-NV11N2RX6K"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				window.dataLayer.push(arguments);
+			}
+			gtag('js', new Date());
+			gtag('config', 'G-NV11N2RX6K');
+		</script>
 		<meta name="description" content={description} />
 		{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
